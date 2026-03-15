@@ -76,6 +76,8 @@ Here, you will define any special terms, acronyms, or abbreviations you plan to 
 
 ### 7. Bill of Materials (BOM)
 
+https://docs.google.com/spreadsheets/d/1A1eUAg9dwYdbk0ykns5I-RBsm5lOC9emmNqb9aPvp44/edit?usp=sharing
+
 
 ### 8. Final Demo Goals
 
