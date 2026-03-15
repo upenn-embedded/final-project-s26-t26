@@ -19,7 +19,13 @@
 
 ### 1. Abstract
 
+Our project is a dual-axis solar tracker that automatically orients a solar panel toward the brightest light source and maximizes the energy harvested from it. Four light sensors detect the sun's direction, two servos aim the panel, and an MPPT algorithm tunes a buck converter to extract peak power. An ESP32 streams data to a live web dashboard. The system demonstrates measurable efficiency gains over a fixed panel.
+
 ### 2. Motivation
+
+Fixed solar panels lose significant energy throughout the day as the sun moves across the sky - often capturing only 60–70% of available energy compared to a panel that tracks the sun. Adding MPPT further increases efficiency by ensuring the panel operates at optimal voltage regardless of changing light and temperature conditions.
+
+This project is interesting as it will combine analog sensing, real-time control, power electronics, and IoT on the ATMega. The result is a fully functional miniature solar energy system that is optimized to maximize power output.
 
 ### 3. System Block Diagram
 
