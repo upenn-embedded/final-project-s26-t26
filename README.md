@@ -11,7 +11,7 @@
 | Ashwin Ranjan    | aranjan@seas.upenn.edu |
 | Arnuv Batra      | avbatra@seas.upenn.edu |
 
-**GitHub Repository URL:**
+**GitHub Repository URL:** https://github.com/upenn-embedded/final-project-s26-t26.git 
 
 **GitHub Pages Website URL:** [for final submission]*
 
