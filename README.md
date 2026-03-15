@@ -39,6 +39,10 @@ This project is interesting as it will combine analog sensing, real-time control
 
 Here, you will define any special terms, acronyms, or abbreviations you plan to use for hardware
 
+LDR = light dependent resistor
+
+MPPT = Maximum Power Point Tracking (for solar panels, basically constantl adjusting to optimize the voltage/current delivered for maximum power output)
+
 **5.2 Functionality**
 
 | ID     | Description                                                                                                                                                                                                              |
@@ -70,6 +74,7 @@ Here, you will define any special terms, acronyms, or abbreviations you plan to 
 
 ### 8. Final Demo Goals
 
+Our final demo will be using a flashlight to show the system tracking a light source that's moving more quickly. 
 
 ### 9. Sprint Planning
 
