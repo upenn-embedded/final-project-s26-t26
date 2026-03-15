@@ -41,10 +41,11 @@ Here, you will define any special terms, acronyms, or abbreviations you plan to 
 
 | ID     | Description                                                                                                                                                                                                              |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| SRS-01 | The IMU 3-axis acceleration will be measured with 16-bit depth every 100 milliseconds +/-10 milliseconds                                                                                                                 |
-| SRS-02 | The distance sensor shall operate and report values at least every .5 seconds.                                                                                                                                           |
-| SRS-03 | Upon non-nominal distance detected (i.e., the trap mechanism has changed at least 10 cm from the nominal range), the system shall be able to detect the change and alert the user in a timely manner (within 5 seconds). |
-| SRS-04 | Upon a request from the user, the system shall get an image from the internal camera and upload the image to the user system within 10s.                                                                                 |
+| SRS-01 | The system will sample the 4 LDRs via the ADC at a minimum frequency of 10 Hz.                                                                                                                 |
+| SRS-02 | The firmware will implement a deadband filter algorithm to prevent servo jitter when the calculated light intensity error between opposing LDRs is below a certain threshold.                                                                                                                                           |
+| SRS-03 | The system will update the IoT dashboard without major latency (<3 seconds) with current tracking status, MPPT values, and error margins. This will be achieved with a ESP32 coprocessor acting solely as a serial-to-Wi-Fi bridge. |
+| SRS-04 | The MCU will utilize hardware timers to generate a stable 50Hz PWM signal for servo actuation without blocking the main execution loop.                                                                                 |
+| SRS-05 | Upon a physical button press interrupt, the system will reset the servos to a default home position within 2 seconds.                                                                                 |
 
 ### 6. Hardware Requirements Specification (HRS)
 
@@ -56,10 +57,11 @@ Here, you will define any special terms, acronyms, or abbreviations you plan to 
 
 | ID     | Description                                                                                                                        |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| HRS-01 | A distance sensor shall be used for obstacle detection. The sensor shall detect obstacles at a maximum distance of at least 10 cm. |
-| HRS-02 | A noisemaker shall be inside the trap with a strength of at least 55 dB.                                                           |
-| HRS-03 | An electronic motor shall be used to reset the trap remotely and have a torque of 40 Nm in order to reset the trap mechanism.      |
-| HRS-04 | A camera sensor shall be used to capture images of the trap interior. The resolution shall be at least 480p.                       |
+| HRS-01 | The solar tracking mechanism will physically rotate at least 45 degrees horizontally (pan) and 45 degrees vertically (tilt). |
+| HRS-02 | The LDRs accurately capture the difference in light between specific locations on the panel, which is then used to adjust the panel tilt and pan accordingly.                                                     |
+| HRS-03 | An off-the-shelf MPPT module OR our own custom hardware using a buck/boost converter + PWM from the ATMega will safely regulate the charging voltage from the solar panel to the energy storage system.    |
+| HRS-04 | The system should charge a battery bank via USB-C, and be able to clearly show whether power is being generated via an LED.                 |
+
 
 ### 7. Bill of Materials (BOM)
 
