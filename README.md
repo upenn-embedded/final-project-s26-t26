@@ -1,15 +1,15 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/-Acvnhrq)
 # Final Project
 
-**Team Number:**
+**Team Number:** Team 25
 
-**Team Name:**
+**Team Name:** AAA Battery
 
-| Team Member Name | Email Address       |
-|------------------|---------------------|
-| [Name 1]         | [Email 1]           |
-| [Name 2]         | [Email 2]           |
-| [Name 3]         | [Email 3]           |
+| Team Member Name | Email Address          |
+|------------------|------------------------|
+| Abhay Agarwal    | abhaya@seas.upenn.edu  |
+| Ashwin Ranjan    | aranjan@seas.upenn.edu |
+| Arnuv Batra      | avbatra@seas.upenn.edu |
 
 **GitHub Repository URL:**
 
