@@ -33,6 +33,11 @@ This project is interesting as it will combine analog sensing, real-time control
 
 ### 4. Design Sketches
 
+The LDR quadrant divider is the most critical design feature — a small cross-shaped wall between the four LDRs that creates shadow differences when the panel is off-angle, enabling the tracking algorithm to determine direction.
+The pan-tilt bracket and base enclosure will both be 3D-printed, allowing us to customize the mount to fit our specific solar panel and servo arrangement. 
+
+![Design Sketch](images/sketch.jpg)
+
 ### 5. Software Requirements Specification (SRS)
 
 **5.1 Definitions, Abbreviations**
