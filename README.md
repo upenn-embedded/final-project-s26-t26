@@ -81,7 +81,8 @@ https://docs.google.com/spreadsheets/d/1A1eUAg9dwYdbk0ykns5I-RBsm5lOC9emmNqb9aPv
 
 ### 8. Final Demo Goals
 
-Our final demo will be using a flashlight to show the system tracking a light source that's moving more quickly. 
+A movable desk lamp will simulate the sun. We move the lamp to different positions and the panel visibly tracks it in real time. A laptop next to the device will display the live web dashboard showing power output and panel orientation.
+The main constraints are WiFi access in the lab for the ESP32 dashboard and a power outlet for the desk lamp. The device itself runs on its solar panel and battery.
 
 ### 9. Sprint Planning
 
