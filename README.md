@@ -29,6 +29,8 @@ This project is interesting as it will combine analog sensing, real-time control
 
 ### 3. System Block Diagram
 
+![System Block Diagram](images/AAA%20Proposal%20Block%20Diagram.jpg)
+
 ### 4. Design Sketches
 
 ### 5. Software Requirements Specification (SRS)
@@ -73,10 +75,10 @@ Here, you will define any special terms, acronyms, or abbreviations you plan to 
 
 | Milestone  | Functionality Achieved | Distribution of Work |
 | ---------- | ---------------------- | -------------------- |
-| Sprint #1  |                        |                      |
-| Sprint #2  |                        |                      |
-| MVP Demo   |                        |                      |
-| Final Demo |                        |                      |
+| Sprint #1  | Finalize BOM, order parts, and begin 3D printing the gimbal/baffle. Set up the bare-metal C toolchain. Write and test the ADC polling and PWM timer code. Connect the servos and test movement. | Arnuv: BOM finalization, 3D print gimbal/baffle. Abhay: ADC polling & LDR voltage divider setup, toolchain config. Ashwin: PWM timer drivers & servo connection/testing. |
+| Sprint #2  | Implement the LDR-based tracking algorithm with deadband filtering and verify servo response to differential light readings. Begin MPPT module wiring and validate solar panel charging into the battery bank. Set up UART communication between ATmega and ESP32 and confirm serial data passthrough. Start scaffolding the web dashboard on the ESP32 side. | Arnuv: MPPT module wiring, solar panel integration, charging validation. Abhay: UART bridge between ATmega & ESP32, begin ESP32 dashboard scaffolding. Ashwin: Tracking algorithm with deadband filter, servo closed-loop testing. |
+| MVP Demo   | Integrate LDR inputs with servo outputs to achieve basic tracking. Wire the MPPT module for basic charging. Integrate the I2C current sensors. Write the UART bridge firmware and establish the ESP32 web dashboard. | Arnuv: I2C INA219 sensor integration, mechanical assembly refinement, home-position button interrupt. Abhay: Live dashboard displaying tracking status & MPPT values. Ashwin: Full tracking loop integration. |
+| Final Demo | Final hardware integration, code optimization, and rigorous testing for the final demonstration. | All: End-to-end system testing, debugging, demo prep. Arnuv: Mechanical fit & finish, LED power indicator integration. Abhay: Dashboard polish & latency validation. Ashwin: Tracking accuracy tuning & code cleanup. |
 
 **This is the end of the Project Proposal section. The remaining sections will be filled out based on the milestone schedule.**
 
