@@ -33,6 +33,8 @@ This project is interesting as it will combine analog sensing, real-time control
 
 ### 4. Design Sketches
 
+![Design Sketch](images/sketch.jpg)
+
 ### 5. Software Requirements Specification (SRS)
 
 **5.1 Definitions, Abbreviations**
