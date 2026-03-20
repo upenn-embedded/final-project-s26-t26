@@ -2,7 +2,7 @@
 
 # Final Project
 
-**Team Number:** Team 26
+**Team Number:** Team 12
 
 **Team Name:** AAA Battery
 
