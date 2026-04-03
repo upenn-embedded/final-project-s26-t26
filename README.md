@@ -2,7 +2,7 @@
 
 # Final Project
 
-**Team Number:** Team 26
+**Team Number:** Team 12
 
 **Team Name:** AAA Battery
 
@@ -77,7 +77,15 @@ Here, you will define any special terms, acronyms, or abbreviations you plan to 
 ### 7. Bill of Materials (BOM)
 What major components do you need and why? Try to be as specific as possible.:
 
-We need the 2 processors (ATMega and ESP 32), 4 LDRs, small solar panel, 2 micro stepper motors, a current/voltage sensor, and the power bank as our major components. The details of all these can be found in the sheet below.
+We need the 2 processors (ATMega and ESP 32). The ATMega is for general communication and interfacing and will be where our computing is done. The ESP32 serves as a port to serve the data we recieve, after processing, to the cloud via wifi. 
+
+We use 4 LDRs to take brightness readings at each corner, and for each of them we read the current that passes through them as a measure of how bright/dim the area is, so we can angle our solar panel accordingly. 
+
+The solar panel is used to actually capture power, and it's mounted on 2 micro stepper motors to control its pan (horizontal) and tilt (vertical) axes. 
+
+A current/voltage sensor is used to read the output power of the solar panel, and the power bank is used to store the generated electricity. 
+
+The details of all these can be found in the sheet below.
 
 
 [BOM Sheet](https://docs.google.com/spreadsheets/d/1A1eUAg9dwYdbk0ykns5I-RBsm5lOC9emmNqb9aPvp44/edit?usp=sharing)
