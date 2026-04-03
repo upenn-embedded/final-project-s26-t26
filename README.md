@@ -124,6 +124,12 @@ The single-axis tracking demo is working. The servo successfully follows a light
 
 ### Next week's plan
 
+Abhay will set up the INA219 sensors and ESP32 communication, around 5 hours. Done when sensor data displays on the ESP32.
+
+Ashwin will add the second servo and tune the tracking, around 4 hours. Done when the panel tracks light in both axes smoothly.
+
+Arnuv will 3D print the gimbal mount and LDR divider, around 6 hours. Done when everything is mounted and moves freely.
+
 ## Sprint Review #2
 
 ### Last week's progress
