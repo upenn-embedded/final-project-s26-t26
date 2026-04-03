@@ -120,6 +120,8 @@ Once we fixed that, we discovered the servo was drifting more in one direction e
 ### Current state of project
 ![](images/A1597461-95D0-42B8-BAEC-2AC0EF84B3DA.jpeg)
 
+The single-axis tracking demo is working. The servo successfully follows a light source using two LDRs. This validates our tracking algorithm and servo control code, which we can now duplicate for the second axis. The 3D printed gimbal mount is being designed. We have also ordered the needed parts.
+
 ### Next week's plan
 
 ## Sprint Review #2
