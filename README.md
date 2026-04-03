@@ -110,6 +110,13 @@ The main constraints are WiFi access in the lab for the ESP32 dashboard and a po
 
 ### Last week's progress
 
+This week we built a simplified single-axis solar tracker demo to validate our core tracking algorithm before integrating into the full dual-axis system. We wrote the code in demo.c and pushed it to the repo.
+The demo uses two LDRs connected to PC0 and PC1 to sense light direction. We configured Timer1 to generate 50Hz PWM on PB1 for servo control. The tracking algorithm compares the two LDR readings and moves the servo toward the brighter side. We also implemented a deadband filter to prevent the servo from jittering when the light levels are nearly equal.
+
+During development we ran into a few issues. The board kept resetting whenever the servo moved, which we traced to the servo drawing too much current and causing a voltage drop.
+
+Once we fixed that, we discovered the servo was drifting more in one direction even when the light was centered. This was because our two LDRs have slightly different responses, so we added UART printing to read the raw ADC values. Next time we will calculate a calibration offset to add to our code
+
 ### Current state of project
 ![](images/A1597461-95D0-42B8-BAEC-2AC0EF84B3DA.jpeg)
 
