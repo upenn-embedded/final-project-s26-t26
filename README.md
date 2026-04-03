@@ -111,6 +111,7 @@ The main constraints are WiFi access in the lab for the ESP32 dashboard and a po
 ### Last week's progress
 
 ### Current state of project
+![](images/A1597461-95D0-42B8-BAEC-2AC0EF84B3DA.jpeg)
 
 ### Next week's plan
 
