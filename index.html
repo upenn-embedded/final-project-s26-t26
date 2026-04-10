@@ -1,0 +1,187 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); color: var(--color-text-primary); }
+.header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 0 1rem; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.25rem; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #639922; display: inline-block; margin-right: 6px; }
+.status-dot.err { background: #E24B4A; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1.25rem; }
+.card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.85rem 1rem; }
+.card-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.card-value { font-size: 22px; font-weight: 500; }
+.card-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+.chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
+.chart-title { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 12px; }
+.ip-row { display: flex; gap: 8px; align-items: center; margin-bottom: 1.25rem; }
+.ip-row input { flex: 1; font-size: 13px; }
+.ip-row button { font-size: 13px; padding: 0 14px; height: 36px; }
+.log { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.85rem 1rem; max-height: 140px; overflow-y: auto; }
+.log-entry { font-size: 12px; font-family: var(--font-mono); color: var(--color-text-secondary); line-height: 1.8; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.log-entry:last-child { border-bottom: none; }
+.save-btn { font-size: 13px; padding: 0 14px; height: 36px; margin-left: auto; display: block; margin-bottom: 8px; }
+</style>
+
+<div style="padding: 0 0.25rem;">
+  <div class="header">
+    <div>
+      <div style="font-size: 16px; font-weight: 500;">Solar tracker</div>
+      <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 2px;">
+        <span class="status-dot" id="dot"></span><span id="status-text">connecting...</span>
+      </div>
+    </div>
+    <div style="font-size: 12px; color: var(--color-text-secondary);" id="last-update">—</div>
+  </div>
+
+  <div class="ip-row">
+    <input type="text" id="ip-input" placeholder="ESP32 IP address (e.g. 172.20.10.8)" value="172.20.10.8" />
+    <button onclick="reconnect()">Connect</button>
+  </div>
+
+  <div class="metrics">
+    <div class="card">
+      <div class="card-label">Voltage</div>
+      <div class="card-value" id="m-voltage">—</div>
+      <div class="card-sub" id="m-voltage-range">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Pan angle</div>
+      <div class="card-value" id="m-pan">—</div>
+      <div class="card-sub" id="m-pan-range">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Samples</div>
+      <div class="card-value" id="m-samples">0</div>
+      <div class="card-sub">since connect</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Errors</div>
+      <div class="card-value" id="m-errors">0</div>
+      <div class="card-sub">fetch failures</div>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-card">
+      <div class="chart-title">Voltage over time</div>
+      <div style="position:relative; height:180px;"><canvas id="chart-v"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Pan angle over time</div>
+      <div style="position:relative; height:180px;"><canvas id="chart-p"></canvas></div>
+    </div>
+  </div>
+
+  <button class="save-btn" onclick="saveCSV()">Download CSV</button>
+  <div class="log" id="log"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const MAX_POINTS = 60;
+const history = [];
+let samples = 0, errors = 0, pollInterval = null;
+let ip = '172.20.10.8';
+
+const chartOpts = (label, color) => ({
+  type: 'line',
+  data: { labels: [], datasets: [{ label, data: [], borderColor: color, borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false }] },
+  options: {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { display: false }, grid: { color: 'rgba(128,128,128,0.1)' } },
+      y: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } }
+    }
+  }
+});
+
+const chartV = new Chart(document.getElementById('chart-v'), chartOpts('Voltage', '#378ADD'));
+const chartP = new Chart(document.getElementById('chart-p'), chartOpts('Pan', '#1D9E75'));
+
+function addPoint(chart, t, v) {
+  chart.data.labels.push(t);
+  chart.data.datasets[0].data.push(v);
+  if (chart.data.labels.length > MAX_POINTS) {
+    chart.data.labels.shift();
+    chart.data.datasets[0].data.shift();
+  }
+  chart.update('none');
+}
+
+function setStatus(ok, msg) {
+  document.getElementById('dot').className = 'status-dot' + (ok ? '' : ' err');
+  document.getElementById('status-text').textContent = msg;
+}
+
+function logEntry(msg, ok=true) {
+  const el = document.getElementById('log');
+  const row = document.createElement('div');
+  row.className = 'log-entry';
+  row.style.color = ok ? 'var(--color-text-secondary)' : 'var(--color-text-danger, #E24B4A)';
+  row.textContent = new Date().toLocaleTimeString() + '  ' + msg;
+  el.insertBefore(row, el.firstChild);
+  while (el.children.length > 50) el.removeChild(el.lastChild);
+}
+
+function minMax(arr) {
+  if (!arr.length) return '—';
+  return 'min ' + Math.min(...arr).toFixed(2) + '  max ' + Math.max(...arr).toFixed(2);
+}
+
+async function poll() {
+  try {
+    const r = await fetch(`http://${ip}/data`, { signal: AbortSignal.timeout(2000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    const t = new Date().toLocaleTimeString();
+    samples++;
+    history.push({ t, ...d });
+
+    document.getElementById('m-voltage').textContent = d.voltage.toFixed(2) + ' V';
+    document.getElementById('m-pan').textContent = d.pan + '°';
+    document.getElementById('m-samples').textContent = samples;
+    document.getElementById('last-update').textContent = 'updated ' + t;
+
+    const vs = history.map(h => h.voltage);
+    const ps = history.map(h => h.pan);
+    document.getElementById('m-voltage-range').textContent = minMax(vs);
+    document.getElementById('m-pan-range').textContent = minMax(ps);
+
+    addPoint(chartV, t, d.voltage);
+    addPoint(chartP, t, d.pan);
+    setStatus(true, 'live');
+    logEntry(`V=${d.voltage.toFixed(2)}  pan=${d.pan}°`);
+  } catch(e) {
+    errors++;
+    document.getElementById('m-errors').textContent = errors;
+    setStatus(false, 'error: ' + e.message);
+    logEntry(e.message, false);
+  }
+}
+
+function reconnect() {
+  ip = document.getElementById('ip-input').value.trim();
+  if (pollInterval) clearInterval(pollInterval);
+  history.length = 0; samples = 0; errors = 0;
+  document.getElementById('m-samples').textContent = 0;
+  document.getElementById('m-errors').textContent = 0;
+  chartV.data.labels = []; chartV.data.datasets[0].data = []; chartV.update('none');
+  chartP.data.labels = []; chartP.data.datasets[0].data = []; chartP.update('none');
+  setStatus(true, 'connecting...');
+  poll();
+  pollInterval = setInterval(poll, 500);
+}
+
+function saveCSV() {
+  if (!history.length) return;
+  const keys = Object.keys(history[0]);
+  const csv = [keys.join(','), ...history.map(r => keys.map(k => r[k]).join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = 'solar_tracker_' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.csv';
+  a.click();
+}
+
+reconnect();
+</script>
