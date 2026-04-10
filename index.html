@@ -1,187 +1,832 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AAA Battery — Solar Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font-sans); color: var(--color-text-primary); }
-.header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 0 1rem; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.25rem; }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #639922; display: inline-block; margin-right: 6px; }
-.status-dot.err { background: #E24B4A; }
-.metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1.25rem; }
-.card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.85rem 1rem; }
-.card-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
-.card-value { font-size: 22px; font-weight: 500; }
-.card-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
-.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
-.chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
-.chart-title { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 12px; }
-.ip-row { display: flex; gap: 8px; align-items: center; margin-bottom: 1.25rem; }
-.ip-row input { flex: 1; font-size: 13px; }
-.ip-row button { font-size: 13px; padding: 0 14px; height: 36px; }
-.log { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.85rem 1rem; max-height: 140px; overflow-y: auto; }
-.log-entry { font-size: 12px; font-family: var(--font-mono); color: var(--color-text-secondary); line-height: 1.8; border-bottom: 0.5px solid var(--color-border-tertiary); }
-.log-entry:last-child { border-bottom: none; }
-.save-btn { font-size: 13px; padding: 0 14px; height: 36px; margin-left: auto; display: block; margin-bottom: 8px; }
-</style>
+:root {
+  --bg:       #0c0d0f;
+  --surface:  #13151a;
+  --border:   #1e2128;
+  --border2:  #2a2d38;
+  --amber:    #f5a623;
+  --amber-dim:#7a5212;
+  --green:    #3dd68c;
+  --green-dim:#1a5c3a;
+  --red:      #e05252;
+  --text:     #e8eaf0;
+  --muted:    #5a5f72;
+  --mono:     'DM Mono', monospace;
+  --sans:     'DM Sans', sans-serif;
+}
 
-<div style="padding: 0 0.25rem;">
-  <div class="header">
-    <div>
-      <div style="font-size: 16px; font-weight: 500;">Solar tracker</div>
-      <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 2px;">
-        <span class="status-dot" id="dot"></span><span id="status-text">connecting...</span>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* scanline overlay for atmosphere */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ── header ── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.brand { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+.brand span { color: var(--amber); }
+.title { font-size: 22px; font-weight: 300; letter-spacing: -0.5px; margin-top: 4px; }
+.title b { font-weight: 500; }
+
+.conn-row { display: flex; align-items: center; gap: 8px; }
+.ip-input {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  width: 180px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.ip-input:focus { border-color: var(--amber); }
+.btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  text-transform: uppercase;
+}
+.btn:hover { border-color: var(--amber); color: var(--amber); }
+.btn-sm {
+  font-size: 10px;
+  padding: 4px 10px;
+}
+
+.pill {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+.pip { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
+.pip.live { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+.pip.err  { background: var(--red); }
+
+@keyframes pulse {
+  0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+
+/* ── grid layout ── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 280px;
+  grid-template-rows: auto auto auto;
+  gap: 12px;
+}
+
+/* ── panel base ── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.panel-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* ── big metric ── */
+.big-val {
+  font-family: var(--mono);
+  font-size: 40px;
+  font-weight: 300;
+  letter-spacing: -1px;
+  line-height: 1;
+  transition: color 0.3s;
+}
+.big-unit { font-size: 16px; color: var(--muted); margin-left: 4px; }
+.sub-row {
+  display: flex; gap: 16px;
+  margin-top: 8px;
+}
+.sub { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.sub b { color: var(--text); font-weight: 400; }
+
+/* ── gauge ── */
+.gauge-wrap { display: flex; justify-content: center; padding: 4px 0 0; }
+svg.gauge { overflow: visible; }
+.gauge-track { fill: none; stroke: var(--border2); stroke-width: 6; stroke-linecap: round; }
+.gauge-fill  { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.5s cubic-bezier(.4,0,.2,1), stroke 0.3s; }
+.gauge-val   { font-family: var(--mono); font-size: 20px; font-weight: 300; fill: var(--text); text-anchor: middle; dominant-baseline: middle; }
+.gauge-unit  { font-family: var(--mono); font-size: 10px; fill: var(--muted); text-anchor: middle; }
+.gauge-sub-row { margin-top: 18px !important; }
+
+/* ── sun viz ── */
+.sun-panel { grid-column: 4; grid-row: 1 / 3; display: flex; flex-direction: column; }
+#sun-canvas { flex: 1; }
+
+/* ── sparkline charts ── */
+.chart-panel   { grid-column: 1 / 4; }
+.chart-panel-2 { grid-column: 1 / 4; }
+
+/* ── log ── */
+.log-panel { grid-column: 4; }
+
+.log-scroll {
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+.log-entry {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 2;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 10px;
+}
+.log-entry:last-child { border-bottom: none; }
+.log-t { color: var(--amber-dim); min-width: 60px; }
+.log-ok { color: var(--text); }
+.log-err { color: var(--red); }
+
+/* ── stats strip ── */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  grid-column: 1 / 5;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.stat-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+.stat-val { font-family: var(--mono); font-size: 20px; font-weight: 400; }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* accent lines on panels */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 18px; right: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
+  opacity: 0.5;
+}
+
+/* bottom bar */
+.footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="brand">Team 12 · <span>AAA Battery</span> · ESE 3500</div>
+    <div class="title"><b>Solar</b> Tracker</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+    <div class="conn-row">
+      <div class="pill"><div class="pip" id="pip"></div><span id="status-text">disconnected</span></div>
+      <input class="ip-input" id="ip-input" value="172.20.10.8" placeholder="ESP32 IP" />
+      <button class="btn" onclick="reconnect()">Connect</button>
+      <button class="btn btn-sm" onclick="clearAll()">Clear</button>
+      <button class="btn btn-sm" onclick="saveCSV()">CSV ↓</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--muted);" id="last-update">—</div>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- voltage metric -->
+  <div class="panel">
+    <div class="panel-label">Output voltage</div>
+    <div class="big-val" id="v-val">—<span class="big-unit">V</span></div>
+    <div class="sub-row">
+      <div class="sub">min <b id="v-min">—</b></div>
+      <div class="sub">max <b id="v-max">—</b></div>
+      <div class="sub">avg <b id="v-avg">—</b></div>
+    </div>
+  </div>
+
+  <!-- pan gauge -->
+  <div class="panel">
+    <div class="panel-label">Pan (horizontal)</div>
+    <div class="gauge-wrap">
+      <svg class="gauge" width="140" height="100" viewBox="0 0 140 100">
+        <path class="gauge-track" id="pan-track" d="" />
+        <path class="gauge-fill"  id="pan-fill"  d="" stroke="var(--amber)" />
+        <text class="gauge-val" id="pan-val" x="70" y="78">—</text>
+        <text class="gauge-unit" x="70" y="94">degrees</text>
+      </svg>
+    </div>
+    <div class="sub-row gauge-sub-row" style="justify-content:center;">
+      <div class="sub">min <b id="pan-min">—</b></div>
+      <div class="sub">max <b id="pan-max">—</b></div>
+    </div>
+  </div>
+
+  <!-- tilt gauge -->
+  <div class="panel">
+    <div class="panel-label">Tilt (vertical)</div>
+    <div class="gauge-wrap">
+      <svg class="gauge" width="140" height="100" viewBox="0 0 140 100">
+        <path class="gauge-track" id="tilt-track" d="" />
+        <path class="gauge-fill"  id="tilt-fill"  d="" stroke="var(--green)" />
+        <text class="gauge-val" id="tilt-val" x="70" y="78">—</text>
+        <text class="gauge-unit" x="70" y="94">degrees</text>
+      </svg>
+    </div>
+    <div class="sub-row gauge-sub-row" style="justify-content:center;">
+      <div class="sub">min <b id="tilt-min">—</b></div>
+      <div class="sub">max <b id="tilt-max">—</b></div>
+    </div>
+  </div>
+
+  <!-- sun position viz -->
+  <div class="panel sun-panel">
+    <div class="panel-label">Panel orientation</div>
+    <canvas id="sun-canvas" width="244" height="220"></canvas>
+  </div>
+
+  <!-- voltage sparkline -->
+  <div class="panel chart-panel">
+    <div class="panel-label" style="display:flex;justify-content:space-between;">
+      <span>Voltage history</span>
+      <span style="color:var(--amber);cursor:pointer;font-size:10px;" onclick="clearHistory()">clear</span>
+    </div>
+    <div style="position:relative;height:120px;">
+      <canvas id="chart-v"></canvas>
+    </div>
+  </div>
+
+  <!-- pan + tilt sparklines — must come before log so grid places them on same row -->
+  <div style="grid-column:1/4;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="panel">
+      <div class="panel-label">Pan history</div>
+      <div style="position:relative;height:120px;">
+        <canvas id="chart-p"></canvas>
       </div>
     </div>
-    <div style="font-size: 12px; color: var(--color-text-secondary);" id="last-update">—</div>
-  </div>
-
-  <div class="ip-row">
-    <input type="text" id="ip-input" placeholder="ESP32 IP address (e.g. 172.20.10.8)" value="172.20.10.8" />
-    <button onclick="reconnect()">Connect</button>
-  </div>
-
-  <div class="metrics">
-    <div class="card">
-      <div class="card-label">Voltage</div>
-      <div class="card-value" id="m-voltage">—</div>
-      <div class="card-sub" id="m-voltage-range">—</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Pan angle</div>
-      <div class="card-value" id="m-pan">—</div>
-      <div class="card-sub" id="m-pan-range">—</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Samples</div>
-      <div class="card-value" id="m-samples">0</div>
-      <div class="card-sub">since connect</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Errors</div>
-      <div class="card-value" id="m-errors">0</div>
-      <div class="card-sub">fetch failures</div>
+    <div class="panel">
+      <div class="panel-label">Tilt history</div>
+      <div style="position:relative;height:120px;">
+        <canvas id="chart-t"></canvas>
+      </div>
     </div>
   </div>
 
-  <div class="charts">
-    <div class="chart-card">
-      <div class="chart-title">Voltage over time</div>
-      <div style="position:relative; height:180px;"><canvas id="chart-v"></canvas></div>
+  <!-- log -->
+  <div class="panel log-panel">
+    <div class="panel-label">Event log</div>
+    <div class="log-scroll" id="log"></div>
+  </div>
+
+  <!-- stats strip -->
+  <div class="stats-strip">
+    <div class="stat-card">
+      <div class="stat-label">Samples</div>
+      <div class="stat-val" id="s-samples">0</div>
+      <div class="stat-sub">this session</div>
     </div>
-    <div class="chart-card">
-      <div class="chart-title">Pan angle over time</div>
-      <div style="position:relative; height:180px;"><canvas id="chart-p"></canvas></div>
+    <div class="stat-card">
+      <div class="stat-label">Fetch errors</div>
+      <div class="stat-val" id="s-errors">0</div>
+      <div class="stat-sub" id="s-error-rate">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Poll rate</div>
+      <div class="stat-val" id="s-rate">1.0<span style="font-size:13px;color:var(--muted)">s</span></div>
+      <div class="stat-sub">interval</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Session time</div>
+      <div class="stat-val" id="s-time">00:00</div>
+      <div class="stat-sub" id="s-started">—</div>
     </div>
   </div>
 
-  <button class="save-btn" onclick="saveCSV()">Download CSV</button>
-  <div class="log" id="log"></div>
+</div>
+
+<div class="footer">
+  <span>AAA Battery · ESE 3500 · UPenn · S26</span>
+  <span id="footer-time">—</span>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const MAX_POINTS = 60;
-const history = [];
-let samples = 0, errors = 0, pollInterval = null;
-let ip = '172.20.10.8';
+// ── gauge arc helpers ──
+function arcPath(cx, cy, r, startDeg, endDeg) {
+  const s = (startDeg - 90) * Math.PI / 180;
+  const e = (endDeg   - 90) * Math.PI / 180;
+  const x1 = cx + r * Math.cos(s), y1 = cy + r * Math.sin(s);
+  const x2 = cx + r * Math.cos(e), y2 = cy + r * Math.sin(e);
+  const large = (endDeg - startDeg) > 180 ? 1 : 0;
+  return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
+}
 
-const chartOpts = (label, color) => ({
+function initGauge(trackId, fillId) {
+  const track = document.getElementById(trackId);
+  const fill  = document.getElementById(fillId);
+  const d = arcPath(70, 74, 46, -140, 140);
+  track.setAttribute('d', d);
+  fill.setAttribute('d', d);
+  const len = fill.getTotalLength ? fill.getTotalLength() : 290;
+  fill.style.strokeDasharray  = len;
+  fill.style.strokeDashoffset = len;
+  fill._len = len;
+}
+
+function setGauge(fillId, valId, value, min, max) {
+  const fill = document.getElementById(fillId);
+  const el   = document.getElementById(valId);
+  if (value === null) { el.textContent = '—'; return; }
+  const pct = Math.max(0, Math.min(1, (value - min) / (max - min)));
+  fill.style.strokeDashoffset = fill._len * (1 - pct);
+  el.textContent = Math.round(value) + '°';
+}
+
+initGauge('pan-track',  'pan-fill');
+initGauge('tilt-track', 'tilt-fill');
+
+// ── Chart.js sparkline ──
+const chartV = new Chart(document.getElementById('chart-v'), {
   type: 'line',
-  data: { labels: [], datasets: [{ label, data: [], borderColor: color, borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false }] },
+  data: { labels: [], datasets: [{
+    data: [], borderColor: '#f5a623', borderWidth: 1.5,
+    pointRadius: 0, tension: 0.4, fill: true,
+    backgroundColor: ctx => {
+      const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 120);
+      g.addColorStop(0, 'rgba(245,166,35,0.15)');
+      g.addColorStop(1, 'rgba(245,166,35,0)');
+      return g;
+    }
+  }]},
   options: {
     responsive: true, maintainAspectRatio: false, animation: false,
-    plugins: { legend: { display: false } },
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: c => c.parsed.y.toFixed(3) + ' V' }
+    }},
     scales: {
-      x: { ticks: { display: false }, grid: { color: 'rgba(128,128,128,0.1)' } },
-      y: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } }
+      x: { ticks: { display: false }, grid: { color: '#1e2128' }, border: { color: '#1e2128' } },
+      y: { ticks: { color: '#5a5f72', font: { family: "'DM Mono'", size: 10 }, callback: v => v.toFixed(1) },
+           grid: { color: '#1e2128' }, border: { color: '#1e2128' } }
     }
   }
 });
 
-const chartV = new Chart(document.getElementById('chart-v'), chartOpts('Voltage', '#378ADD'));
-const chartP = new Chart(document.getElementById('chart-p'), chartOpts('Pan', '#1D9E75'));
-
-function addPoint(chart, t, v) {
-  chart.data.labels.push(t);
-  chart.data.datasets[0].data.push(v);
-  if (chart.data.labels.length > MAX_POINTS) {
-    chart.data.labels.shift();
-    chart.data.datasets[0].data.shift();
+const chartT = new Chart(document.getElementById('chart-t'), {
+  type: 'line',
+  data: { labels: [], datasets: [{
+    data: [], borderColor: '#3dd68c', borderWidth: 1.5,
+    pointRadius: 0, tension: 0.4, fill: true,
+    backgroundColor: ctx => {
+      const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 120);
+      g.addColorStop(0, 'rgba(61,214,140,0.15)');
+      g.addColorStop(1, 'rgba(61,214,140,0)');
+      return g;
+    }
+  }]},
+  options: {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: c => Math.round(c.parsed.y) + '°' }
+    }},
+    scales: {
+      x: { ticks: { display: false }, grid: { color: '#1e2128' }, border: { color: '#1e2128' } },
+      y: { min: 0, max: 90,
+           ticks: { color: '#5a5f72', font: { family: "'DM Mono'", size: 10 }, callback: v => v + '°' },
+           grid: { color: '#1e2128' }, border: { color: '#1e2128' } }
+    }
   }
-  chart.update('none');
+});
+
+const chartP = new Chart(document.getElementById('chart-p'), {
+  type: 'line',
+  data: { labels: [], datasets: [{
+    data: [], borderColor: '#f5a623', borderWidth: 1.5,
+    pointRadius: 0, tension: 0.4, fill: true,
+    backgroundColor: ctx => {
+      const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 120);
+      g.addColorStop(0, 'rgba(245,166,35,0.15)');
+      g.addColorStop(1, 'rgba(245,166,35,0)');
+      return g;
+    }
+  }]},
+  options: {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: c => Math.round(c.parsed.y) + '°' }
+    }},
+    scales: {
+      x: { ticks: { display: false }, grid: { color: '#1e2128' }, border: { color: '#1e2128' } },
+      y: { min: 0, max: 180,
+           ticks: { color: '#5a5f72', font: { family: "'DM Mono'", size: 10 }, callback: v => v + '°' },
+           grid: { color: '#1e2128' }, border: { color: '#1e2128' } }
+    }
+  }
+});
+
+const sunCanvas = document.getElementById('sun-canvas');
+const ctx2 = sunCanvas.getContext('2d');
+
+function lerp2D(a, b, t) {
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 }
 
+function drawSunViz(pan, tilt) {
+  const W = sunCanvas.width, H = sunCanvas.height;
+  ctx2.clearRect(0, 0, W, H);
+
+  const groundY = H * 0.72;
+
+  // sky
+  ctx2.fillStyle = '#0a0e1a';
+  ctx2.fillRect(0, 0, W, groundY);
+
+  // ground
+  ctx2.fillStyle = '#0d1208';
+  ctx2.fillRect(0, groundY, W, H - groundY);
+
+  // horizon
+  ctx2.strokeStyle = '#1a2010';
+  ctx2.lineWidth = 1;
+  ctx2.beginPath(); ctx2.moveTo(0, groundY); ctx2.lineTo(W, groundY); ctx2.stroke();
+
+  if (pan === null) {
+    ctx2.font = '11px DM Mono';
+    ctx2.fillStyle = '#5a5f72';
+    ctx2.textAlign = 'center';
+    ctx2.fillText('no signal', W/2, H/2);
+    return;
+  }
+
+  // sun position: pan 0→180 = left→right, tilt 0→90 = horizon→zenith
+  const sunX = 20 + (pan / 180) * (W - 40);
+  const sunY = groundY - 12 - (tilt / 90) * (groundY - 30);
+
+  // sun rays
+  ctx2.save();
+  ctx2.translate(sunX, sunY);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    ctx2.beginPath();
+    ctx2.moveTo(Math.cos(a)*16, Math.sin(a)*16);
+    ctx2.lineTo(Math.cos(a)*24, Math.sin(a)*24);
+    ctx2.strokeStyle = 'rgba(245,166,35,0.5)';
+    ctx2.lineWidth = 1.5;
+    ctx2.stroke();
+  }
+  ctx2.restore();
+
+  // sun glow
+  ctx2.shadowBlur = 18; ctx2.shadowColor = '#f5a623';
+  ctx2.beginPath();
+  ctx2.arc(sunX, sunY, 10, 0, Math.PI*2);
+  ctx2.fillStyle = '#ffd166';
+  ctx2.fill();
+  ctx2.shadowBlur = 0;
+
+  // ── 3D solar panel ──
+  const poleX = W / 2, poleTopY = groundY - 32;
+
+  // pole
+  ctx2.strokeStyle = '#2a2d38';
+  ctx2.lineWidth = 3;
+  ctx2.beginPath();
+  ctx2.moveTo(poleX, groundY);
+  ctx2.lineTo(poleX, poleTopY);
+  ctx2.stroke();
+
+  // base
+  ctx2.strokeStyle = '#2a2d38';
+  ctx2.lineWidth = 2;
+  ctx2.beginPath();
+  ctx2.moveTo(poleX - 10, groundY);
+  ctx2.lineTo(poleX + 10, groundY);
+  ctx2.stroke();
+
+  // panel geometry: flat rectangle rotated by tilt (from horizontal) and pan
+  const PW = 44, PH = 28;
+  const tiltRad = (tilt / 90) * (Math.PI / 2);
+  const panRad  = ((pan - 90) / 180) * Math.PI;
+
+  // 3D vertices in panel space (initially horizontal in XZ plane)
+  const raw = [[-PW,-PH,0],[PW,-PH,0],[PW,PH,0],[-PW,PH,0]];
+
+  // apply tilt (rotate around X: lifts the panel up)
+  const tilted = raw.map(([x,y,z]) => {
+    const ny = y * Math.cos(tiltRad) - z * Math.sin(tiltRad);
+    const nz = y * Math.sin(tiltRad) + z * Math.cos(tiltRad);
+    return [x, ny, nz];
+  });
+
+  // apply pan (rotate around Y)
+  const panned = tilted.map(([x,y,z]) => {
+    const nx = x * Math.cos(panRad) + z * Math.sin(panRad);
+    const nz = -x * Math.sin(panRad) + z * Math.cos(panRad);
+    return [nx, y, nz];
+  });
+
+  // perspective project
+  const FL = 180, camZ = 120;
+  const proj = panned.map(([x,y,z]) => {
+    const s = FL / (FL + z + camZ);
+    return [poleX + x * s, poleTopY + y * s];
+  });
+
+  // sunlight beam to panel center
+  const pc = [(proj[0][0]+proj[2][0])/2, (proj[0][1]+proj[2][1])/2];
+  const dx = pc[0]-sunX, dy = pc[1]-sunY;
+  const dist = Math.sqrt(dx*dx+dy*dy);
+  for (let i = -1; i <= 1; i++) {
+    const ox = -dy/dist*i*5, oy = dx/dist*i*5;
+    const grad = ctx2.createLinearGradient(sunX+ox, sunY+oy, pc[0]+ox*0.3, pc[1]+oy*0.3);
+    grad.addColorStop(0, 'rgba(245,166,35,0.25)');
+    grad.addColorStop(1, 'rgba(245,166,35,0)');
+    ctx2.beginPath();
+    ctx2.moveTo(sunX+ox, sunY+oy);
+    ctx2.lineTo(pc[0]+ox*0.3, pc[1]+oy*0.3);
+    ctx2.strokeStyle = grad;
+    ctx2.lineWidth = 1;
+    ctx2.stroke();
+  }
+
+  // panel face fill — blue solar cell color
+  ctx2.beginPath();
+  ctx2.moveTo(...proj[0]);
+  proj.slice(1).forEach(p => ctx2.lineTo(...p));
+  ctx2.closePath();
+  ctx2.fillStyle = '#152340';
+  ctx2.fill();
+
+  // panel border
+  ctx2.strokeStyle = '#2a4a7a';
+  ctx2.lineWidth = 1.5;
+  ctx2.stroke();
+
+  // cell grid lines — horizontal (3 rows)
+  for (let i = 1; i < 3; i++) {
+    const t = i / 3;
+    const p1 = lerp2D(proj[0], proj[3], t);
+    const p2 = lerp2D(proj[1], proj[2], t);
+    ctx2.beginPath(); ctx2.moveTo(...p1); ctx2.lineTo(...p2);
+    ctx2.strokeStyle = '#1e3355'; ctx2.lineWidth = 0.5; ctx2.stroke();
+  }
+  // cell grid lines — vertical (2 cols)
+  for (let i = 1; i < 2; i++) {
+    const t = i / 2;
+    const p1 = lerp2D(proj[0], proj[1], t);
+    const p2 = lerp2D(proj[3], proj[2], t);
+    ctx2.beginPath(); ctx2.moveTo(...p1); ctx2.lineTo(...p2);
+    ctx2.strokeStyle = '#1e3355'; ctx2.lineWidth = 0.5; ctx2.stroke();
+  }
+
+  // reflection sheen on panel
+  ctx2.beginPath();
+  ctx2.moveTo(...proj[0]);
+  ctx2.lineTo(...lerp2D(proj[0], proj[1], 0.5));
+  ctx2.lineTo(...lerp2D(proj[3], proj[2], 0.5));
+  ctx2.lineTo(...proj[3]);
+  ctx2.closePath();
+  ctx2.fillStyle = 'rgba(100,160,255,0.05)';
+  ctx2.fill();
+
+  // ground shadow
+  const shadowPts = proj.map(([x,y]) => [poleX + (x-poleX)*0.8, groundY + (y-poleTopY)*0.08]);
+  ctx2.beginPath();
+  ctx2.moveTo(...shadowPts[0]);
+  shadowPts.slice(1).forEach(p => ctx2.lineTo(...p));
+  ctx2.closePath();
+  ctx2.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx2.fill();
+
+  // pan/tilt labels
+  ctx2.font = '9px DM Mono';
+  ctx2.fillStyle = '#5a5f72';
+  ctx2.textAlign = 'left';
+  ctx2.fillText(`pan ${Math.round(pan)}°  tilt ${Math.round(tilt)}°`, 6, H - 6);
+}
+
+// ── state ──
+const history = [];
+let samples = 0, errors = 0, pollInterval = null, sessionStart = null;
+let ip = '172.20.10.8';
+const MAX_POINTS = 120;
+
 function setStatus(ok, msg) {
-  document.getElementById('dot').className = 'status-dot' + (ok ? '' : ' err');
+  const pip = document.getElementById('pip');
+  pip.className = 'pip ' + (ok === null ? '' : ok ? 'live' : 'err');
   document.getElementById('status-text').textContent = msg;
 }
 
-function logEntry(msg, ok=true) {
+function log(msg, ok=true) {
   const el = document.getElementById('log');
   const row = document.createElement('div');
   row.className = 'log-entry';
-  row.style.color = ok ? 'var(--color-text-secondary)' : 'var(--color-text-danger, #E24B4A)';
-  row.textContent = new Date().toLocaleTimeString() + '  ' + msg;
+  const t = new Date().toLocaleTimeString('en-US', { hour12: false });
+  row.innerHTML = `<span class="log-t">${t}</span><span class="${ok ? 'log-ok' : 'log-err'}">${msg}</span>`;
   el.insertBefore(row, el.firstChild);
-  while (el.children.length > 50) el.removeChild(el.lastChild);
+  while (el.children.length > 60) el.removeChild(el.lastChild);
 }
 
-function minMax(arr) {
-  if (!arr.length) return '—';
-  return 'min ' + Math.min(...arr).toFixed(2) + '  max ' + Math.max(...arr).toFixed(2);
-}
+function minOf(arr)  { return arr.length ? Math.min(...arr) : null; }
+function maxOf(arr)  { return arr.length ? Math.max(...arr) : null; }
+function avgOf(arr)  { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
+function fmt(v, d=2) { return v === null ? '—' : v.toFixed(d); }
 
 async function poll() {
   try {
     const r = await fetch(`http://${ip}/data`, { signal: AbortSignal.timeout(2000) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
-    const t = new Date().toLocaleTimeString();
+    const now = new Date();
     samples++;
-    history.push({ t, ...d });
+    history.push({ t: now, ...d });
 
-    document.getElementById('m-voltage').textContent = d.voltage.toFixed(2) + ' V';
-    document.getElementById('m-pan').textContent = d.pan + '°';
-    document.getElementById('m-samples').textContent = samples;
-    document.getElementById('last-update').textContent = 'updated ' + t;
+    // big voltage
+    document.getElementById('v-val').innerHTML = d.voltage.toFixed(2) + '<span class="big-unit">V</span>';
 
-    const vs = history.map(h => h.voltage);
-    const ps = history.map(h => h.pan);
-    document.getElementById('m-voltage-range').textContent = minMax(vs);
-    document.getElementById('m-pan-range').textContent = minMax(ps);
+    // gauges
+    const pan  = d.pan  ?? null;
+    const tilt = d.tilt ?? null;
+    setGauge('pan-fill',  'pan-val',  pan,  0, 180);
+    setGauge('tilt-fill', 'tilt-val', tilt, 0, 90);
 
-    addPoint(chartV, t, d.voltage);
-    addPoint(chartP, t, d.pan);
-    setStatus(true, 'live');
-    logEntry(`V=${d.voltage.toFixed(2)}  pan=${d.pan}°`);
+    // sun viz
+    drawSunViz(pan ?? 90, tilt ?? 45);
+
+    // stats
+    const vs    = history.map(h => h.voltage);
+    const pans  = history.map(h => h.pan).filter(v => v != null);
+    const tilts = history.map(h => h.tilt).filter(v => v != null);
+
+    document.getElementById('v-min').textContent = fmt(minOf(vs)) + 'V';
+    document.getElementById('v-max').textContent = fmt(maxOf(vs)) + 'V';
+    document.getElementById('v-avg').textContent = fmt(avgOf(vs)) + 'V';
+
+    if (pans.length) {
+      document.getElementById('pan-min').textContent = Math.round(minOf(pans)) + '°';
+      document.getElementById('pan-max').textContent = Math.round(maxOf(pans)) + '°';
+    }
+    if (tilts.length) {
+      document.getElementById('tilt-min').textContent = Math.round(minOf(tilts)) + '°';
+      document.getElementById('tilt-max').textContent = Math.round(maxOf(tilts)) + '°';
+    }
+
+    // sparklines
+    const t = now.toLocaleTimeString('en-US', { hour12: false });
+    chartV.data.labels.push(t);
+    chartV.data.datasets[0].data.push(d.voltage);
+    if (chartV.data.labels.length > MAX_POINTS) { chartV.data.labels.shift(); chartV.data.datasets[0].data.shift(); }
+    chartV.update('none');
+
+    if (tilt !== null) {
+      chartT.data.labels.push(t);
+      chartT.data.datasets[0].data.push(tilt);
+      if (chartT.data.labels.length > MAX_POINTS) { chartT.data.labels.shift(); chartT.data.datasets[0].data.shift(); }
+      chartT.update('none');
+    }
+
+    if (pan !== null) {
+      chartP.data.labels.push(t);
+      chartP.data.datasets[0].data.push(pan);
+      if (chartP.data.labels.length > MAX_POINTS) { chartP.data.labels.shift(); chartP.data.datasets[0].data.shift(); }
+      chartP.update('none');
+    }
+
+    document.getElementById('s-samples').textContent = samples;
+    document.getElementById('last-update').textContent = 'last update ' + t;
+    setStatus(true, 'live · ' + ip);
+    log(`V=${d.voltage.toFixed(3)}  pan=${pan ?? '—'}°  tilt=${tilt ?? '—'}°`);
   } catch(e) {
     errors++;
-    document.getElementById('m-errors').textContent = errors;
-    setStatus(false, 'error: ' + e.message);
-    logEntry(e.message, false);
+    document.getElementById('s-errors').textContent = errors;
+    const rate = samples > 0 ? ((errors / (samples + errors)) * 100).toFixed(1) + '% error rate' : '—';
+    document.getElementById('s-error-rate').textContent = rate;
+    setStatus(false, 'error');
+    log(e.message, false);
   }
 }
+
+// session timer
+setInterval(() => {
+  if (!sessionStart) return;
+  const s = Math.floor((Date.now() - sessionStart) / 1000);
+  const mm = String(Math.floor(s/60)).padStart(2,'0');
+  const ss = String(s % 60).padStart(2,'0');
+  document.getElementById('s-time').textContent = mm + ':' + ss;
+  document.getElementById('footer-time').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+}, 1000);
 
 function reconnect() {
   ip = document.getElementById('ip-input').value.trim();
   if (pollInterval) clearInterval(pollInterval);
-  history.length = 0; samples = 0; errors = 0;
-  document.getElementById('m-samples').textContent = 0;
-  document.getElementById('m-errors').textContent = 0;
+  history.length = 0; samples = 0; errors = 0; sessionStart = Date.now();
   chartV.data.labels = []; chartV.data.datasets[0].data = []; chartV.update('none');
+  chartT.data.labels = []; chartT.data.datasets[0].data = []; chartT.update('none');
   chartP.data.labels = []; chartP.data.datasets[0].data = []; chartP.update('none');
-  setStatus(true, 'connecting...');
+  document.getElementById('s-samples').textContent = 0;
+  document.getElementById('s-errors').textContent  = 0;
+  document.getElementById('s-error-rate').textContent = '—';
+  document.getElementById('s-started').textContent = 'started ' + new Date().toLocaleTimeString();
+  drawSunViz(null, null);
+  setStatus(null, 'connecting...');
+  log('connecting to ' + ip);
   poll();
-  pollInterval = setInterval(poll, 500);
+  pollInterval = setInterval(poll, 1000);
+}
+
+function clearAll() {
+  history.length = 0; samples = 0; errors = 0; sessionStart = Date.now();
+  chartV.data.labels = []; chartV.data.datasets[0].data = []; chartV.update('none');
+  chartT.data.labels = []; chartT.data.datasets[0].data = []; chartT.update('none');
+  chartP.data.labels = []; chartP.data.datasets[0].data = []; chartP.update('none');
+  document.getElementById('s-samples').textContent = 0;
+  document.getElementById('s-errors').textContent  = 0;
+  document.getElementById('s-error-rate').textContent = '—';
+  document.getElementById('s-time').textContent = '00:00';
+  document.getElementById('v-min').textContent = '—';
+  document.getElementById('v-max').textContent = '—';
+  document.getElementById('v-avg').textContent = '—';
+  document.getElementById('pan-min').textContent = '—';
+  document.getElementById('pan-max').textContent = '—';
+  document.getElementById('tilt-min').textContent = '—';
+  document.getElementById('tilt-max').textContent = '—';
+  document.getElementById('log').innerHTML = '';
+  log('cleared');
+}
+
+function clearHistory() {
+  history.length = 0;
+  chartV.data.labels = []; chartV.data.datasets[0].data = []; chartV.update('none');
+  chartT.data.labels = []; chartT.data.datasets[0].data = []; chartT.update('none');
+  chartP.data.labels = []; chartP.data.datasets[0].data = []; chartP.update('none');
+  log('history cleared');
 }
 
 function saveCSV() {
-  if (!history.length) return;
-  const keys = Object.keys(history[0]);
-  const csv = [keys.join(','), ...history.map(r => keys.map(k => r[k]).join(','))].join('\n');
+  if (!history.length) { log('no data to save', false); return; }
+  const keys = ['t', 'voltage', 'pan', 'tilt'];
+  const rows = history.map(r => [r.t.toISOString(), r.voltage ?? '', r.pan ?? '', r.tilt ?? ''].join(','));
+  const csv = ['time,voltage,pan,tilt', ...rows].join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
   a.download = 'solar_tracker_' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.csv';
   a.click();
+  log(`saved ${history.length} rows to CSV`);
 }
 
 reconnect();
 </script>
+</body>
+</html>
