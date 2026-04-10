@@ -134,9 +134,33 @@ Arnuv will 3D print the gimbal mount and LDR divider, around 6 hours. Done when 
 
 ### Last week's progress
 
+Abhay completed the INA219 current/voltage sensing setup. The INA219 is now communicating over I2C and providing accurate power readings from the solar panel. The driver code has been written and pushed to the repo.
+
+![INA219 Sensor](images/ina.jpeg)
+
+Ashwin got the ESP32 Feather working and set up a local web server that pulls all sensor data for the live dashboard. He also sent off the prints for the remaining mechanical housing parts.
+
+![Web Server Dashboard](images/server.png)
+
+Arnuv printed the mechanical parts for the gimbal and is assembling the full pan-tilt mechanism with the servos mounted. He also CADed and printed a solar panel mount.
+
+![Solar Panel Mount](images/panel_mount.png)
+
+![Servo Assembly](images/servo.jpeg)
+
+![Solar Panel](images/solar_panel.jpeg)
+
 ### Current state of project
 
+The core sensing and data pipeline is coming together. The INA219 is reading solar panel power output, the ESP32 is hosting a live dashboard over Wi-Fi, and the mechanical gimbal is being assembled with the 3D-printed parts. The main integration work remaining is connecting the ATmega tracking loop to the ESP32 dashboard via UART and mounting the solar panel on the completed gimbal.
+
 ### Next week's plan
+
+Abhay will integrate the INA219 readings into the UART data stream to the ESP32, around 4 hours. Done when live power data appears on the web dashboard.
+
+Ashwin will finalize the full tracking loop integrating both axes with the ESP32 data display, around 5 hours. Done when the dashboard shows real-time tracking status and power output.
+
+Arnuv will complete the mechanical assembly and mount the solar panel and LDR divider onto the gimbal, around 5 hours. Done when the full system is physically assembled and the panel can move freely on both axes.
 
 ## MVP Demo
 
