@@ -147,6 +147,14 @@ body::before {
 .sub { font-family: var(--mono); font-size: 11px; color: var(--muted); }
 .sub b { color: var(--text); font-weight: 400; }
 
+/* ── compact 3-up electrical metrics ── */
+.metrics-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.metric-lbl { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+.metric-val { font-family: var(--mono); font-size: 22px; font-weight: 300; line-height: 1; letter-spacing: -0.5px; }
+.metric-unit { font-size: 11px; color: var(--muted); margin-left: 3px; }
+.metric-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 6px; }
+.metric-sub b { color: var(--text); font-weight: 400; }
+
 /* ── gauge ── */
 .gauge-wrap { display: flex; justify-content: center; padding: 4px 0 0; }
 svg.gauge { overflow: visible; }
@@ -247,14 +255,25 @@ svg.gauge { overflow: visible; }
 
 <div class="grid">
 
-  <!-- voltage metric -->
+  <!-- electrical metrics (voltage / current / power) -->
   <div class="panel">
-    <div class="panel-label">Output voltage</div>
-    <div class="big-val" id="v-val">—<span class="big-unit">V</span></div>
-    <div class="sub-row">
-      <div class="sub">min <b id="v-min">—</b></div>
-      <div class="sub">max <b id="v-max">—</b></div>
-      <div class="sub">avg <b id="v-avg">—</b></div>
+    <div class="panel-label">Electrical</div>
+    <div class="metrics-3">
+      <div>
+        <div class="metric-lbl">Voltage</div>
+        <div class="metric-val" id="v-val">—<span class="metric-unit">V</span></div>
+        <div class="metric-sub">avg <b id="v-avg">—</b></div>
+      </div>
+      <div>
+        <div class="metric-lbl">Current</div>
+        <div class="metric-val" id="i-val">—<span class="metric-unit">mA</span></div>
+        <div class="metric-sub">avg <b id="i-avg">—</b></div>
+      </div>
+      <div>
+        <div class="metric-lbl">Power</div>
+        <div class="metric-val" id="p-val">—<span class="metric-unit">mW</span></div>
+        <div class="metric-sub">avg <b id="p-avg">—</b></div>
+      </div>
     </div>
   </div>
 
@@ -693,8 +712,12 @@ async function poll() {
     samples++;
     history.push({ t: now, ...d });
 
-    // big voltage
-    document.getElementById('v-val').innerHTML = d.voltage.toFixed(2) + '<span class="big-unit">V</span>';
+    // electrical metrics
+    document.getElementById('v-val').innerHTML = d.voltage.toFixed(2) + '<span class="metric-unit">V</span>';
+    const cur = d.current ?? null;
+    const pwr = d.power   ?? null;
+    document.getElementById('i-val').innerHTML = (cur !== null ? Math.round(cur) : '—') + '<span class="metric-unit">mA</span>';
+    document.getElementById('p-val').innerHTML = (pwr !== null ? Math.round(pwr) : '—') + '<span class="metric-unit">mW</span>';
 
     // gauges
     const pan  = d.pan  ?? null;
@@ -707,12 +730,14 @@ async function poll() {
 
     // stats
     const vs    = history.map(h => h.voltage);
+    const is    = history.map(h => h.current).filter(v => v != null);
+    const ps    = history.map(h => h.power).filter(v => v != null);
     const pans  = history.map(h => h.pan).filter(v => v != null);
     const tilts = history.map(h => h.tilt).filter(v => v != null);
 
-    document.getElementById('v-min').textContent = fmt(minOf(vs)) + 'V';
-    document.getElementById('v-max').textContent = fmt(maxOf(vs)) + 'V';
     document.getElementById('v-avg').textContent = fmt(avgOf(vs)) + 'V';
+    document.getElementById('i-avg').textContent = is.length ? Math.round(avgOf(is)) + 'mA' : '—';
+    document.getElementById('p-avg').textContent = ps.length ? Math.round(avgOf(ps)) + 'mW' : '—';
 
     if (pans.length) {
       document.getElementById('pan-min').textContent = Math.round(minOf(pans)) + '°';
@@ -747,7 +772,7 @@ async function poll() {
     document.getElementById('s-samples').textContent = samples;
     document.getElementById('last-update').textContent = 'last update ' + t;
     setStatus(true, 'live · ' + ip);
-    log(`V=${d.voltage.toFixed(3)}  pan=${pan ?? '—'}°  tilt=${tilt ?? '—'}°`);
+    log(`V=${d.voltage.toFixed(3)}  I=${cur ?? '—'}mA  P=${pwr ?? '—'}mW  pan=${pan ?? '—'}°  tilt=${tilt ?? '—'}°`);
   } catch(e) {
     errors++;
     document.getElementById('s-errors').textContent = errors;
@@ -795,9 +820,12 @@ function clearAll() {
   document.getElementById('s-errors').textContent  = 0;
   document.getElementById('s-error-rate').textContent = '—';
   document.getElementById('s-time').textContent = '00:00';
-  document.getElementById('v-min').textContent = '—';
-  document.getElementById('v-max').textContent = '—';
   document.getElementById('v-avg').textContent = '—';
+  document.getElementById('i-avg').textContent = '—';
+  document.getElementById('p-avg').textContent = '—';
+  document.getElementById('v-val').innerHTML = '—<span class="metric-unit">V</span>';
+  document.getElementById('i-val').innerHTML = '—<span class="metric-unit">mA</span>';
+  document.getElementById('p-val').innerHTML = '—<span class="metric-unit">mW</span>';
   document.getElementById('pan-min').textContent = '—';
   document.getElementById('pan-max').textContent = '—';
   document.getElementById('tilt-min').textContent = '—';
@@ -816,9 +844,8 @@ function clearHistory() {
 
 function saveCSV() {
   if (!history.length) { log('no data to save', false); return; }
-  const keys = ['t', 'voltage', 'pan', 'tilt'];
-  const rows = history.map(r => [r.t.toISOString(), r.voltage ?? '', r.pan ?? '', r.tilt ?? ''].join(','));
-  const csv = ['time,voltage,pan,tilt', ...rows].join('\n');
+  const rows = history.map(r => [r.t.toISOString(), r.voltage ?? '', r.current ?? '', r.power ?? '', r.pan ?? '', r.tilt ?? ''].join(','));
+  const csv = ['time,voltage,current,power,pan,tilt', ...rows].join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
   a.download = 'solar_tracker_' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.csv';
