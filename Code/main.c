@@ -46,34 +46,36 @@ void moveServo(uint16_t position) {
     servoPos = position;
 }
 
+uint8_t servoToDeg(uint16_t pos) {
+    return (uint8_t)((uint32_t)(pos - SERVO_MIN) * 180 / (SERVO_MAX - SERVO_MIN));
+}
+
 // ============== MAIN PROGRAM ==============
 int main(void) {
     // Release I2C pins first
     DDRC &= ~((1 << PC4) | (1 << PC5));
     PORTC &= ~((1 << PC4) | (1 << PC5));
-    
+
     // Initialize hardware
     setupADC();
     setupServo();
     uart_init();
-    
+
     _delay_ms(100);
     printf("Starting...\n");
-    
+
     i2c_init();
     ina219_init();
-    
+
     _delay_ms(1000);
-    
+
     // Main loop
     while (1) {
         // Read light sensors
         uint16_t east = readADC(0);
         uint16_t west = readADC(1);
         int16_t diff = east - west;
-        
-        printf("E:%d W:%d D:%d ", east, west, diff);
-        
+
         // Move servo based on light
         if (diff > DEADBAND) {
             moveServo(servoPos - 500);
@@ -81,16 +83,18 @@ int main(void) {
         else if (diff < -DEADBAND) {
             moveServo(servoPos + 500);
         }
-        
+
         // Read power from INA219
         uint16_t voltage = ina219_get_voltage_mv();
         int16_t current = ina219_get_current_ma();
         int32_t power = ((int32_t)voltage * current) / 1000;
-        
-        printf("V:%umV I:%dmA P:%ldmW\n", voltage, current, power);
-        
+        uint8_t pan = servoToDeg(servoPos);
+
+        // Single line for ESP32 to parse
+        printf("V:%u,I:%d,P:%ld,PAN:%u\n", voltage, current, power, pan);
+
         _delay_ms(100);
     }
-    
+
     return 0;
 }
