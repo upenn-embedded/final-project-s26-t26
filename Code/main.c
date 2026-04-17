@@ -10,12 +10,27 @@
 
 // ============== SETTINGS ==============
 #define DEADBAND    10
-#define SERVO_MIN   2000
-#define SERVO_MAX   4000
-#define SERVO_MID   3000
+#define STEP_SIZE   200
 
-// ============== GLOBAL VARIABLE ==============
-uint16_t servoPos = SERVO_MID;
+// Tilt servo (PB1) - 3% to 6% duty cycle
+#define TILT_MIN    1200
+#define TILT_MAX    2400
+#define TILT_MID    1800
+
+// Pan servo (PB2) - standard 180 degree
+#define PAN_MIN     800
+#define PAN_MAX     4800
+#define PAN_MID     2800
+
+// ============== LDR CHANNELS ==============
+#define LDR_TOP     0
+#define LDR_BOTTOM  1
+#define LDR_EAST    2
+#define LDR_WEST    3
+
+// ============== GLOBAL VARIABLES ==============
+uint16_t tiltPos = TILT_MID;
+uint16_t panPos = PAN_MID;
 
 // ============== SETUP FUNCTIONS ==============
 void setupADC(void) {
@@ -23,12 +38,16 @@ void setupADC(void) {
     ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
 }
 
-void setupServo(void) {
-    DDRB |= (1 << PB1);
-    TCCR1A = (1 << COM1A1) | (1 << WGM11);
+void setupServos(void) {
+    DDRB |= (1 << PB1) | (1 << PB2);
+    
+    TCCR1A = (1 << COM1A1) | (1 << COM1B1) | (1 << WGM11);
     TCCR1B = (1 << WGM13) | (1 << WGM12) | (1 << CS11);
+    
     ICR1 = 39999;
-    OCR1A = SERVO_MID;
+    
+    OCR1A = TILT_MID;
+    OCR1B = PAN_MID;
 }
 
 // ============== HELPER FUNCTIONS ==============
@@ -39,62 +58,82 @@ uint16_t readADC(uint8_t channel) {
     return ADC;
 }
 
-void moveServo(uint16_t position) {
-    if (position < SERVO_MIN) position = SERVO_MIN;
-    if (position > SERVO_MAX) position = SERVO_MAX;
+void moveTilt(uint16_t position) {
+    if (position < TILT_MIN) position = TILT_MIN;
+    if (position > TILT_MAX) position = TILT_MAX;
     OCR1A = position;
-    servoPos = position;
+    tiltPos = position;
 }
 
-uint8_t servoToDeg(uint16_t pos) {
-    return (uint8_t)((uint32_t)(pos - SERVO_MIN) * 180 / (SERVO_MAX - SERVO_MIN));
+void movePan(uint16_t position) {
+    if (position < PAN_MIN) position = PAN_MIN;
+    if (position > PAN_MAX) position = PAN_MAX;
+    OCR1B = position;
+    panPos = position;
+}
+
+uint8_t tiltToDeg(uint16_t pos) {
+    return (uint8_t)((uint32_t)(pos - TILT_MIN) * 180 / (TILT_MAX - TILT_MIN));
+}
+
+uint8_t panToDeg(uint16_t pos) {
+    return (uint8_t)((uint32_t)(pos - PAN_MIN) * 180 / (PAN_MAX - PAN_MIN));
 }
 
 // ============== MAIN PROGRAM ==============
 int main(void) {
-    // Release I2C pins first
     DDRC &= ~((1 << PC4) | (1 << PC5));
     PORTC &= ~((1 << PC4) | (1 << PC5));
-
-    // Initialize hardware
+    
     setupADC();
-    setupServo();
+    setupServos();
     uart_init();
-
+    
     _delay_ms(100);
-    printf("Starting...\n");
-
+    printf("Starting dual-axis tracker...\n");
+    
     i2c_init();
     ina219_init();
-
+    
     _delay_ms(1000);
-
-    // Main loop
+    
     while (1) {
-        // Read light sensors
-        uint16_t east = readADC(0);
-        uint16_t west = readADC(1);
-        int16_t diff = east - west;
-
-        // Move servo based on light
-        if (diff > DEADBAND) {
-            moveServo(servoPos - 500);
+        uint16_t top = readADC(LDR_TOP);
+        uint16_t bottom = readADC(LDR_BOTTOM);
+        uint16_t east = readADC(LDR_EAST);
+        uint16_t west = readADC(LDR_WEST);
+        
+        int16_t diffV = top - bottom;
+        int16_t diffH = east - west;
+        
+        // Move tilt servo
+        if (diffV > DEADBAND) {
+            moveTilt(tiltPos - STEP_SIZE);
         }
-        else if (diff < -DEADBAND) {
-            moveServo(servoPos + 500);
+        else if (diffV < -DEADBAND) {
+            moveTilt(tiltPos + STEP_SIZE);
         }
-
+        
+        // Move pan servo
+        if (diffH > DEADBAND) {
+            movePan(panPos - STEP_SIZE);
+        }
+        else if (diffH < -DEADBAND) {
+            movePan(panPos + STEP_SIZE);
+        }
+        
         // Read power from INA219
         uint16_t voltage = ina219_get_voltage_mv();
         int16_t current = ina219_get_current_ma();
         int32_t power = ((int32_t)voltage * current) / 1000;
-        uint8_t pan = servoToDeg(servoPos);
-
-        // Single line for ESP32 to parse
-        printf("V:%u,I:%d,P:%ld,PAN:%u\n", voltage, current, power, pan);
-
+        
+        uint8_t tiltDeg = tiltToDeg(tiltPos);
+        uint8_t panDeg = panToDeg(panPos);
+        
+        printf("V:%u,I:%d,P:%ld,TILT:%u,PAN:%u\n", voltage, current, power, tiltDeg, panDeg);
+        
         _delay_ms(100);
     }
-
+    
     return 0;
 }
