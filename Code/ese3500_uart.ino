@@ -45,14 +45,16 @@ void loop() {
     String line = Serial1.readStringUntil('\n');
     line.trim();
 
-    int v, i, pa;
+    int v, i, ti, pa;
     long p;
-    if (sscanf(line.c_str(), "V:%d,I:%d,P:%ld,PAN:%d", &v, &i, &p, &pa) == 4) {
+    // Updated to parse: V:5000,I:100,P:500,TILT:45,PAN:90
+    if (sscanf(line.c_str(), "V:%d,I:%d,P:%ld,TILT:%d,PAN:%d", &v, &i, &p, &ti, &pa) == 5) {
       voltage = v / 1000.0;
       current = i;
       power   = (int)(voltage * i);
+      tilt    = ti;
       pan     = pa;
-      Serial.printf("V:%.2fV  I:%dmA  P:%dmW  PAN:%d°\n", voltage, current, power, pan);
+      Serial.printf("V:%.2fV  I:%dmA  P:%dmW  TILT:%d°  PAN:%d°\n", voltage, current, power, tilt, pan);
     }
   }
 
