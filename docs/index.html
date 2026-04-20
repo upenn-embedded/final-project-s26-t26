@@ -176,9 +176,8 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 20px 24px;
-      position: relative;
       overflow: hidden;
+      position: relative;
     }
     .team-card::before {
       content: '';
@@ -186,7 +185,17 @@
       top: 0; left: 20px; right: 20px;
       height: 1px;
       background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
+      z-index: 1;
     }
+    .team-photo {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      border-bottom: 1px solid var(--border);
+    }
+    .team-info { padding: 16px 20px 20px; }
     .team-name { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
     .team-email { font-family: var(--mono); font-size: 11px; color: var(--muted); }
 
@@ -470,16 +479,23 @@
     <div class="section-title"><b>Meet</b> the Team</div>
     <div class="team-grid">
       <div class="team-card">
-        <div class="team-name">Abhay Agarwal</div>
-        <div class="team-email">abhaya@seas.upenn.edu</div>
+        <div class="team-info">
+          <div class="team-name">Abhay Agarwal</div>
+          <div class="team-email">abhaya@seas.upenn.edu</div>
+        </div>
       </div>
       <div class="team-card">
-        <div class="team-name">Ashwin Ranjan</div>
-        <div class="team-email">aranjan@seas.upenn.edu</div>
+        <img class="team-photo" src="images/ashwin.png" alt="Ashwin Ranjan" />
+        <div class="team-info">
+          <div class="team-name">Ashwin Ranjan</div>
+          <div class="team-email">aranjan@seas.upenn.edu</div>
+        </div>
       </div>
       <div class="team-card">
-        <div class="team-name">Arnuv Batra</div>
-        <div class="team-email">avbatra@seas.upenn.edu</div>
+        <div class="team-info">
+          <div class="team-name">Arnuv Batra</div>
+          <div class="team-email">avbatra@seas.upenn.edu</div>
+        </div>
       </div>
     </div>
   </section>
