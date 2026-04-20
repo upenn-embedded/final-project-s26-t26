@@ -108,7 +108,7 @@ body::before {
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 280px;
-  grid-template-rows: auto auto auto;
+  grid-auto-rows: auto;
   gap: 12px;
 }
 
@@ -168,15 +168,14 @@ svg.gauge { overflow: visible; }
 .sun-panel { grid-column: 4; grid-row: 1 / 3; display: flex; flex-direction: column; }
 #sun-canvas { flex: 1; }
 
-/* ── sparkline charts ── */
-.chart-panel   { grid-column: 1 / 4; }
-.chart-panel-2 { grid-column: 1 / 4; }
+/* ── power history chart ── */
+.chart-panel { grid-column: 1 / 4; grid-row: 2; }
 
 /* ── log ── */
-.log-panel { grid-column: 4; }
+.log-panel { grid-column: 1 / 5; grid-row: 3; }
 
 .log-scroll {
-  max-height: 180px;
+  max-height: 140px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border2) transparent;
@@ -235,7 +234,6 @@ svg.gauge { overflow: visible; }
 </style>
 </head>
 <body>
-
 <div class="header">
   <div>
     <div class="brand">Team 12 · <span>AAA Battery</span> · ESE 3500</div>
@@ -317,34 +315,18 @@ svg.gauge { overflow: visible; }
     <canvas id="sun-canvas" width="244" height="220"></canvas>
   </div>
 
-  <!-- voltage sparkline -->
+  <!-- power history (only sparkline) -->
   <div class="panel chart-panel">
     <div class="panel-label" style="display:flex;justify-content:space-between;">
-      <span>Voltage history</span>
+      <span>Power history</span>
       <span style="color:var(--amber);cursor:pointer;font-size:10px;" onclick="clearHistory()">clear</span>
     </div>
-    <div style="position:relative;height:120px;">
-      <canvas id="chart-v"></canvas>
+    <div style="position:relative;height:240px;">
+      <canvas id="chart-pwr"></canvas>
     </div>
   </div>
 
-  <!-- pan + tilt sparklines — must come before log so grid places them on same row -->
-  <div style="grid-column:1/4;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-    <div class="panel">
-      <div class="panel-label">Pan history</div>
-      <div style="position:relative;height:120px;">
-        <canvas id="chart-p"></canvas>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="panel-label">Tilt history</div>
-      <div style="position:relative;height:120px;">
-        <canvas id="chart-t"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- log -->
+  <!-- log (full width now) -->
   <div class="panel log-panel">
     <div class="panel-label">Event log</div>
     <div class="log-scroll" id="log"></div>
@@ -417,15 +399,15 @@ function setGauge(fillId, valId, value, min, max) {
 initGauge('pan-track',  'pan-fill');
 initGauge('tilt-track', 'tilt-fill');
 
-// ── Chart.js sparkline ──
-const chartV = new Chart(document.getElementById('chart-v'), {
+// ── Chart.js power history ──
+const chartPwr = new Chart(document.getElementById('chart-pwr'), {
   type: 'line',
   data: { labels: [], datasets: [{
     data: [], borderColor: '#f5a623', borderWidth: 1.5,
     pointRadius: 0, tension: 0.4, fill: true,
     backgroundColor: ctx => {
-      const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 120);
-      g.addColorStop(0, 'rgba(245,166,35,0.15)');
+      const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 240);
+      g.addColorStop(0, 'rgba(245,166,35,0.18)');
       g.addColorStop(1, 'rgba(245,166,35,0)');
       return g;
     }
@@ -433,63 +415,13 @@ const chartV = new Chart(document.getElementById('chart-v'), {
   options: {
     responsive: true, maintainAspectRatio: false, animation: false,
     plugins: { legend: { display: false }, tooltip: {
-      callbacks: { label: c => c.parsed.y.toFixed(3) + ' V' }
+      callbacks: { label: c => Math.round(c.parsed.y) + ' mW' }
     }},
     scales: {
-      x: { ticks: { display: false }, grid: { color: '#1e2128' }, border: { color: '#1e2128' } },
-      y: { ticks: { color: '#5a5f72', font: { family: "'DM Mono'", size: 10 }, callback: v => v.toFixed(1) },
-           grid: { color: '#1e2128' }, border: { color: '#1e2128' } }
-    }
-  }
-});
-
-const chartT = new Chart(document.getElementById('chart-t'), {
-  type: 'line',
-  data: { labels: [], datasets: [{
-    data: [], borderColor: '#3dd68c', borderWidth: 1.5,
-    pointRadius: 0, tension: 0.4, fill: true,
-    backgroundColor: ctx => {
-      const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 120);
-      g.addColorStop(0, 'rgba(61,214,140,0.15)');
-      g.addColorStop(1, 'rgba(61,214,140,0)');
-      return g;
-    }
-  }]},
-  options: {
-    responsive: true, maintainAspectRatio: false, animation: false,
-    plugins: { legend: { display: false }, tooltip: {
-      callbacks: { label: c => Math.round(c.parsed.y) + '°' }
-    }},
-    scales: {
-      x: { ticks: { display: false }, grid: { color: '#1e2128' }, border: { color: '#1e2128' } },
-      y: { min: 0, max: 90,
-           ticks: { color: '#5a5f72', font: { family: "'DM Mono'", size: 10 }, callback: v => v + '°' },
-           grid: { color: '#1e2128' }, border: { color: '#1e2128' } }
-    }
-  }
-});
-
-const chartP = new Chart(document.getElementById('chart-p'), {
-  type: 'line',
-  data: { labels: [], datasets: [{
-    data: [], borderColor: '#f5a623', borderWidth: 1.5,
-    pointRadius: 0, tension: 0.4, fill: true,
-    backgroundColor: ctx => {
-      const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 120);
-      g.addColorStop(0, 'rgba(245,166,35,0.15)');
-      g.addColorStop(1, 'rgba(245,166,35,0)');
-      return g;
-    }
-  }]},
-  options: {
-    responsive: true, maintainAspectRatio: false, animation: false,
-    plugins: { legend: { display: false }, tooltip: {
-      callbacks: { label: c => Math.round(c.parsed.y) + '°' }
-    }},
-    scales: {
-      x: { ticks: { display: false }, grid: { color: '#1e2128' }, border: { color: '#1e2128' } },
-      y: { min: 0, max: 180,
-           ticks: { color: '#5a5f72', font: { family: "'DM Mono'", size: 10 }, callback: v => v + '°' },
+      x: { ticks: { color: '#5a5f72', font: { family: "'DM Mono'", size: 10 }, maxRotation: 0, autoSkipPadding: 20 },
+           grid: { color: '#1e2128' }, border: { color: '#1e2128' } },
+      y: { beginAtZero: true,
+           ticks: { color: '#5a5f72', font: { family: "'DM Mono'", size: 10 }, callback: v => v + ' mW' },
            grid: { color: '#1e2128' }, border: { color: '#1e2128' } }
     }
   }
@@ -529,9 +461,9 @@ function drawSunViz(pan, tilt) {
     return;
   }
 
-  // sun position: pan 0→180 = left→right, tilt 0→90 = horizon→zenith
+  // sun position: pan 0→180 = left→right; tilt 0 (panel flat) = zenith, tilt 90 (panel vertical) = horizon
   const sunX = 20 + (pan / 180) * (W - 40);
-  const sunY = groundY - 12 - (tilt / 90) * (groundY - 30);
+  const sunY = groundY - 12 - (1 - tilt / 90) * (groundY - 30);
 
   // sun rays
   ctx2.save();
@@ -579,8 +511,8 @@ function drawSunViz(pan, tilt) {
   const tiltRad = (tilt / 90) * (Math.PI / 2);
   const panRad  = ((pan - 90) / 180) * Math.PI;
 
-  // 3D vertices in panel space (initially horizontal in XZ plane)
-  const raw = [[-PW,-PH,0],[PW,-PH,0],[PW,PH,0],[-PW,PH,0]];
+  // 3D vertices in panel space — flat/horizontal at tilt=0 (lies in XZ plane)
+  const raw = [[-PW,0,-PH],[PW,0,-PH],[PW,0,PH],[-PW,0,PH]];
 
   // apply tilt (rotate around X: lifts the panel up)
   const tilted = raw.map(([x,y,z]) => {
@@ -710,6 +642,8 @@ async function poll() {
     const d = await r.json();
     const now = new Date();
     samples++;
+    // servo reports 0-180 but physical tilt range is 0-90 (0 = vertical, 90 = horizontal)
+    if (d.tilt != null) d.tilt = d.tilt / 2;
     history.push({ t: now, ...d });
 
     // electrical metrics
@@ -748,25 +682,13 @@ async function poll() {
       document.getElementById('tilt-max').textContent = Math.round(maxOf(tilts)) + '°';
     }
 
-    // sparklines
+    // power sparkline
     const t = now.toLocaleTimeString('en-US', { hour12: false });
-    chartV.data.labels.push(t);
-    chartV.data.datasets[0].data.push(d.voltage);
-    if (chartV.data.labels.length > MAX_POINTS) { chartV.data.labels.shift(); chartV.data.datasets[0].data.shift(); }
-    chartV.update('none');
-
-    if (tilt !== null) {
-      chartT.data.labels.push(t);
-      chartT.data.datasets[0].data.push(tilt);
-      if (chartT.data.labels.length > MAX_POINTS) { chartT.data.labels.shift(); chartT.data.datasets[0].data.shift(); }
-      chartT.update('none');
-    }
-
-    if (pan !== null) {
-      chartP.data.labels.push(t);
-      chartP.data.datasets[0].data.push(pan);
-      if (chartP.data.labels.length > MAX_POINTS) { chartP.data.labels.shift(); chartP.data.datasets[0].data.shift(); }
-      chartP.update('none');
+    if (pwr !== null) {
+      chartPwr.data.labels.push(t);
+      chartPwr.data.datasets[0].data.push(pwr);
+      if (chartPwr.data.labels.length > MAX_POINTS) { chartPwr.data.labels.shift(); chartPwr.data.datasets[0].data.shift(); }
+      chartPwr.update('none');
     }
 
     document.getElementById('s-samples').textContent = samples;
@@ -797,9 +719,7 @@ function reconnect() {
   ip = document.getElementById('ip-input').value.trim();
   if (pollInterval) clearInterval(pollInterval);
   history.length = 0; samples = 0; errors = 0; sessionStart = Date.now();
-  chartV.data.labels = []; chartV.data.datasets[0].data = []; chartV.update('none');
-  chartT.data.labels = []; chartT.data.datasets[0].data = []; chartT.update('none');
-  chartP.data.labels = []; chartP.data.datasets[0].data = []; chartP.update('none');
+  chartPwr.data.labels = []; chartPwr.data.datasets[0].data = []; chartPwr.update('none');
   document.getElementById('s-samples').textContent = 0;
   document.getElementById('s-errors').textContent  = 0;
   document.getElementById('s-error-rate').textContent = '—';
@@ -813,9 +733,7 @@ function reconnect() {
 
 function clearAll() {
   history.length = 0; samples = 0; errors = 0; sessionStart = Date.now();
-  chartV.data.labels = []; chartV.data.datasets[0].data = []; chartV.update('none');
-  chartT.data.labels = []; chartT.data.datasets[0].data = []; chartT.update('none');
-  chartP.data.labels = []; chartP.data.datasets[0].data = []; chartP.update('none');
+  chartPwr.data.labels = []; chartPwr.data.datasets[0].data = []; chartPwr.update('none');
   document.getElementById('s-samples').textContent = 0;
   document.getElementById('s-errors').textContent  = 0;
   document.getElementById('s-error-rate').textContent = '—';
@@ -836,9 +754,7 @@ function clearAll() {
 
 function clearHistory() {
   history.length = 0;
-  chartV.data.labels = []; chartV.data.datasets[0].data = []; chartV.update('none');
-  chartT.data.labels = []; chartT.data.datasets[0].data = []; chartT.update('none');
-  chartP.data.labels = []; chartP.data.datasets[0].data = []; chartP.update('none');
+  chartPwr.data.labels = []; chartPwr.data.datasets[0].data = []; chartPwr.update('none');
   log('history cleared');
 }
 

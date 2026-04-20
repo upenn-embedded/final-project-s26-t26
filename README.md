@@ -164,6 +164,93 @@ Arnuv will complete the mechanical assembly and mount the solar panel and LDR di
 
 ## MVP Demo
 
+### 1. System block diagram & hardware implementation
+
+![System Block Diagram](images/AAA%20Proposal%20Block%20Diagram.jpg)
+
+![Assembled pan/tilt tracker](images/tilt_pan.jpeg)
+
+The ATmega328PB is the main MCU. It runs the tracking loop, reads the four LDRs through its ADC, drives both servos with hardware-timer PWM, and talks to the INA219 over I2C. It then ships the full telemetry packet (voltage, current, power, pan, tilt) up to the ESP32 Feather over UART. The Feather acts as a serial-to-Wi-Fi bridge and parses the UART frames and hosts a local HTTP server that shows the latest readings. 
+
+Power-wise, the solar panel goes through an INA219 sensor, then into the MPPT/buck stage, then into a USB-C power bank. A "power OK" LED will be wired off the panel-side rail to show when the panel is generating.
+
+### 2. Firmware implementation
+
+#### Application logic (ATmega, [Code/main.c](Code/main.c))
+
+- Main loop samples four LDRs via ADC, computes horizontal and vertical error from opposing pairs, applies a deadband, and nudges the pan/tilt servo targets. Servo duty cycles are written directly to the Timer1 compare registers so the 50 Hz PWM never blocks the main loop.
+- Polls the INA219 every loop iteration and packs voltage/current/power plus current pan/tilt into a CSV line sent over UART at 9600 baud.
+- Home-position button routed to an external interrupt pin, so the ISR sets a flag that the main loop picks up to drive both servos back to center.
+
+#### ATMega Code
+
+- [Code/i2c.c](Code/i2c.c) / [Code/i2c.h](Code/i2c.h) — I2C master driver for the ATmega: start/stop, byte read/write, repeated-start, no Arduino Wire dependency.
+- [Code/ina219.c](Code/ina219.c) / [Code/ina219.h](Code/ina219.h) — INA219 driver built on top of our I2C driver. Configures the calibration register and gets voltage and current readings.
+- [Code/uart.c](Code/uart.c) / [Code/uart.h](Code/uart.h) — UART TX/RX driver used for debug prints and the ESP32 server.
+- [Code/demo.c](Code/demo.c) — the Sprint #1 single-axis validation demo that we generalized into the dual-axis tracker in [Code/main.c](Code/main.c).
+
+#### ESP32 Code ([Code/ese3500_uart.ino](Code/ese3500_uart.ino))
+
+- Reads the UART CSV frames and outputs a JSON. Also serves the server [index.html](index.html).
+
+### 3. Demo
+
+> **https://drive.google.com/file/d/1Zr529B0K1XDM-7jDKDU-3Q6FYsO6Z7r6/view?usp=sharing**
+
+Live demo flow: point a desk lamp at the panel → the gimbal tracks toward it on both axes → the dashboard updates voltage, current, and power in real time.
+
+### 4. SRS status & validation
+
+<!-- markdownlint-disable MD060 -->
+
+| ID     | Description                                       | Status   | Validation                                                                                  |
+| ------ | ------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------- |
+| SRS-01 | Sample 4 LDRs via ADC at >=10 Hz                  | Achieved | Main loop has an inbuilt delay of 100ms, so each LDR samples at 10 Hz. |
+| SRS-02 | Deadband filter to prevent servo jitter           | Achieved | With panel centered, servos hold still; logged UART error values stay inside the deadband. |
+| SRS-03 | IoT dashboard updates with < 3 s latency           | Achieved | Dashboard polls the ESP32 server data at 1 Hz; measured end-to-end UART-to-dashboard lag is under 3s |
+| SRS-04 | Hardware-timer 50 Hz PWM, non-blocking            | Achieved | Scoped PB1/PB2 PWM outputs - stable 20 ms period, main loop continues executing during PWM.|
+| SRS-05 | Button interrupt resets servos to home within 2 s | Achieved | Button wired to external-interrupt pin; servos return to center on press, well under 2 s.  |
+
+<!-- markdownlint-enable MD060 -->
+
+**How we collected the data:** GPIO-toggle + oscilloscope for ADC and PWM timing (SRS-01, SRS-04); live UART logs captured on the laptop for deadband and latency checks (SRS-02, SRS-03); timer on repeated button presses for SRS-05.
+
+### 5. HRS status & validation
+
+<!-- markdownlint-disable MD060 -->
+
+| ID     | Description                                          | Status       | Validation                                                                                            |
+| ------ | ---------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------- |
+| HRS-01 | Physical rotation >=45 deg pan and >=45 deg tilt     | Achieved     | Measured end-stop angles with a protractor on the assembled gimbal - both axes exceed 45 deg.         |
+| HRS-02 | LDRs capture light differences for tracking          | Achieved     | Moved a phone flashlight across the LDR array and logged raw ADC values over UART; opposing pairs diverge cleanly.|
+| HRS-03 | MPPT / buck-boost regulating charging from the panel | Not achieved | Module is wired on the bench but MPPT tuning against the real panel is still open.                    |
+| HRS-04 | USB-C battery-bank charging with LED power indicator | Partial      | LED is mounted; remaining work is wiring the solar-panel rail through to the USB-C output.            |
+
+<!-- markdownlint-enable MD060 -->
+
+**How we collected the data:** protractor measurement on the physical gimbal (HRS-01); LDR raw ADC logs streamed over UART and cross-checked against the dashboard (HRS-02); INA219 voltage/current on the dashboard while the panel is under lamp (feeds into HRS-03 validation for Final Demo).
+
+### 6. Remaining elements to complete the project
+
+- **Mechanical casework** — enclosure base for the electronics is printed but needs fit-and-finish (cable routing, lid, button cutout).
+- **GUI / web portal** — the dashboard in [index.html](index.html) is live and charting voltage/current/power/pan/tilt; remaining polish is a dedicated history chart for power and an MPPT efficiency plot once HRS-03 lands.
+- **Power path** — finish HRS-04 by routing the regulated panel output through the USB-C charger IC and wiring the "power OK" LED off that rail.
+- **MPPT tuning** — sweep the buck converter duty cycle and log power to find the peak (HRS-03).
+
+### 7. Riskiest part remaining
+
+**MPPT (HRS-03).** The tracking, sensing, and dashboard are all solved. The riskiest piece left is getting the buck-converter + MPPT loop to actually hold the panel at its maximum-power point under changing light without oscillating or stalling the panel.
+
+### 8. De-risking plan
+
+- Start with a fixed duty-cycle sweep logged through the INA219, so we can plot a P-V curve for our panel under the lamp and confirm the MPPT is converging to the real peak.
+- Implement perturb-and-observe in small duty-cycle steps with a dwell time longer than the INA219 conversion time to avoid chasing noise.
+- Fall back to an off-the-shelf MPPT module (already in the BOM) if our custom loop is unstable by the week before Final Demo — this is the explicit "OR" in HRS-03.
+- Keep the panel → INA219 → dashboard path as a bench oscilloscope for the MPPT loop, so any regression is visible in real time.
+
+### 9. Questions / help from the teaching team
+N/A
+
 ## Final Report
 
 Don't forget to make the GitHub pages public website!
