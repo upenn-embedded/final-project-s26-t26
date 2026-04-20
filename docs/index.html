@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AAA Battery — Dual-Axis Solar Tracker | ESE 3500</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #0c0d0f;
+      --surface:   #13151a;
+      --surface2:  #191c24;
+      --border:    #1e2128;
+      --border2:   #2a2d38;
+      --amber:     #f5a623;
+      --amber-dim: #7a5212;
+      --amber-bg:  #1a1206;
+      --green:     #3dd68c;
+      --green-dim: #1a5c3a;
+      --blue:      #4d9de0;
+      --red:       #e05252;
+      --text:      #e8eaf0;
+      --muted:     #5a5f72;
+      --muted2:    #8891a8;
+      --mono:      'DM Mono', monospace;
+      --sans:      'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* scanline atmosphere */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(12,13,15,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 52px;
+    }
+    .nav-brand {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted2);
+    }
+    .nav-brand span { color: var(--amber); }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--amber); }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 80px 48px 64px;
+      border-bottom: 1px solid var(--border);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .hero-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 5vw, 62px);
+      font-weight: 300;
+      letter-spacing: -1.5px;
+      line-height: 1.05;
+      margin-bottom: 24px;
+    }
+    .hero h1 b { font-weight: 500; }
+    .hero-sub {
+      font-size: 17px;
+      color: var(--muted2);
+      max-width: 640px;
+      line-height: 1.65;
+      margin-bottom: 36px;
+    }
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .meta-chip {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      padding: 6px 14px;
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+    }
+    .meta-chip span { color: var(--text); }
+
+    /* ── MAIN LAYOUT ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      padding: 64px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    section:last-child { border-bottom: none; }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: -0.5px;
+      margin-bottom: 24px;
+    }
+    .section-title b { font-weight: 500; }
+
+    p { color: var(--muted2); line-height: 1.75; margin-bottom: 16px; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ── TEAM CARDS ── */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .team-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .team-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 20px; right: 20px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
+    }
+    .team-name { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+    .team-email { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+    /* ── IMAGE FIGURE ── */
+    .fig {
+      margin: 28px 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .fig img {
+      width: 100%;
+      display: block;
+      max-height: 480px;
+      object-fit: contain;
+      background: #0a0b0d;
+    }
+    .fig-caption {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── TWO-UP IMAGE GRID ── */
+    .img-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 28px 0;
+    }
+    .img-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    /* ── REQ TABLE ── */
+    .req-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .req-table th {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border2);
+    }
+    .req-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted2);
+      vertical-align: top;
+    }
+    .req-table tr:last-child td { border-bottom: none; }
+    .req-table tr:hover td { background: var(--surface2); }
+    .req-id {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--amber);
+      white-space: nowrap;
+    }
+    .badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      padding: 3px 9px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .badge-green { background: var(--green-dim); color: var(--green); }
+    .badge-amber { background: var(--amber-bg); color: var(--amber); }
+    .badge-red   { background: #2a1212; color: var(--red); }
+
+    /* ── SPRINT BLOCKS ── */
+    .sprint-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .sprint-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 24px; right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
+    }
+    .sprint-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 12px;
+    }
+    .sprint-card h3 {
+      font-size: 20px;
+      font-weight: 400;
+      margin-bottom: 16px;
+    }
+    .sprint-card p { margin-bottom: 12px; }
+
+    /* ── CODE FILE LIST ── */
+    .file-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .file-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .file-chip-name { color: var(--amber); margin-bottom: 3px; }
+    .file-chip-desc { font-size: 10px; color: var(--muted); line-height: 1.4; }
+
+    /* ── BLOCK DIAGRAM / ARCHITECTURE ── */
+    .arch-callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 14px;
+      color: var(--muted2);
+    }
+    .arch-callout strong { color: var(--text); font-weight: 500; }
+
+    /* ── DEMO BUTTON ── */
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--amber);
+      color: #000;
+      font-weight: 500;
+    }
+    .btn-primary:hover { background: #ffc04d; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--muted2);
+    }
+    .btn-outline:hover { border-color: var(--amber); color: var(--amber); }
+
+    /* ── RESULTS PLACEHOLDER ── */
+    .placeholder-box {
+      border: 1px dashed var(--border2);
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      margin: 20px 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--amber); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { gap: 16px; }
+      .hero, .container { padding-left: 20px; padding-right: 20px; }
+      .team-grid { grid-template-columns: 1fr; }
+      .img-grid-2, .img-grid-3 { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 12px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Team 12 · <span>AAA Battery</span> · ESE 3500</div>
+  <ul class="nav-links">
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#design">Design</a></li>
+    <li><a href="#firmware">Firmware</a></li>
+    <li><a href="#progress">Progress</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#report">Report</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="container">
+  <div class="hero">
+    <div class="hero-tag">ESE 3500 · Spring 2026 · Final Project</div>
+    <h1><b>Dual-Axis</b><br>Solar Tracker</h1>
+    <p class="hero-sub">
+      An embedded system that autonomously orients a solar panel toward the brightest
+      light source, combining analog sensing, real-time servo control, power electronics,
+      and a live IoT dashboard — all running on a bare-metal ATmega328PB.
+    </p>
+    <div class="hero-meta">
+      <div class="meta-chip">Team Name: <span>AAA Battery</span></div>
+      <div class="meta-chip">MCU: <span>ATmega328PB</span></div>
+      <div class="meta-chip">IoT: <span>ESP32 Feather</span></div>
+      <div class="meta-chip">Sensing: <span>4× LDR + INA219</span></div>
+      <div class="meta-chip">Actuation: <span>2× Micro Servo</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TEAM -->
+<div class="container">
+  <section id="team">
+    <div class="section-label">Team</div>
+    <div class="section-title"><b>Meet</b> the Team</div>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-name">Abhay Agarwal</div>
+        <div class="team-email">abhaya@seas.upenn.edu</div>
+      </div>
+      <div class="team-card">
+        <div class="team-name">Ashwin Ranjan</div>
+        <div class="team-email">aranjan@seas.upenn.edu</div>
+      </div>
+      <div class="team-card">
+        <div class="team-name">Arnuv Batra</div>
+        <div class="team-email">avbatra@seas.upenn.edu</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ABSTRACT -->
+<div class="container">
+  <section id="abstract">
+    <div class="section-label">01 — Overview</div>
+    <div class="section-title"><b>Abstract</b> & Motivation</div>
+
+    <p>
+      Our project is a dual-axis solar tracker that automatically orients a solar panel toward
+      the brightest light source and maximizes the energy harvested from it. Four light sensors
+      detect the sun's direction, two servos aim the panel, and an MPPT algorithm tunes a buck
+      converter to extract peak power. An ESP32 streams data to a live web dashboard. The system
+      demonstrates measurable efficiency gains over a fixed panel.
+    </p>
+    <p>
+      Fixed solar panels lose significant energy throughout the day as the sun moves across the
+      sky — often capturing only 60–70% of available energy compared to a panel that tracks the
+      sun. Adding MPPT further increases efficiency by ensuring the panel operates at optimal
+      voltage regardless of changing light and temperature conditions.
+    </p>
+    <p>
+      This project combines analog sensing, real-time control, power electronics, and IoT on a
+      single ATmega328PB — the result is a fully functional miniature solar energy system optimized
+      to maximize power output.
+    </p>
+
+    <div class="fig">
+      <img src="../images/AAA Proposal Block Diagram.jpg" alt="System Block Diagram" />
+      <div class="fig-caption">Fig 1 — System Block Diagram</div>
+    </div>
+
+    <div class="arch-callout">
+      <strong>Architecture in one sentence:</strong> Four LDRs feed the ATmega ADC → tracking
+      algorithm drives two servo PWMs → INA219 over I2C reports panel power → UART frame ships
+      telemetry to ESP32 → ESP32 hosts a live JSON endpoint and web dashboard over Wi-Fi.
+    </div>
+  </section>
+</div>
+
+<!-- DESIGN -->
+<div class="container">
+  <section id="design">
+    <div class="section-label">02 — Hardware</div>
+    <div class="section-title"><b>Design</b> & Mechanical</div>
+
+    <p>
+      The LDR quadrant divider is the most critical design feature — a small cross-shaped wall
+      between the four LDRs that creates shadow differences when the panel is off-angle, enabling
+      the tracking algorithm to determine direction. The pan-tilt bracket and base enclosure are
+      both 3D-printed, allowing the mount to fit our specific solar panel and servo arrangement.
+    </p>
+
+    <div class="img-grid-2">
+      <div class="fig">
+        <img src="../images/sketch.jpg" alt="Design Sketch" />
+        <div class="fig-caption">Fig 2 — Initial design sketch (gimbal + LDR baffle)</div>
+      </div>
+      <div class="fig">
+        <img src="../images/tilt_pan.jpeg" alt="Assembled pan/tilt tracker" />
+        <div class="fig-caption">Fig 3 — Assembled pan/tilt gimbal (MVP)</div>
+      </div>
+    </div>
+
+    <div class="img-grid-3">
+      <div class="fig">
+        <img src="../images/panel_mount.png" alt="3D printed solar panel mount" />
+        <div class="fig-caption">Fig 4 — 3D printed solar panel mount</div>
+      </div>
+      <div class="fig">
+        <img src="../images/servo.jpeg" alt="Servo assembly" />
+        <div class="fig-caption">Fig 5 — Servo assembly</div>
+      </div>
+      <div class="fig">
+        <img src="../images/solar_panel.jpeg" alt="Solar panel" />
+        <div class="fig-caption">Fig 6 — Solar panel</div>
+      </div>
+    </div>
+
+    <p>
+      The CAD files for the solar mounting plate (SolidWorks + STL) are included in the
+      repository under <code style="font-family:var(--mono);font-size:13px;color:var(--amber);">CAD/</code>.
+      All mechanical parts were 3D printed in-lab.
+    </p>
+  </section>
+</div>
+
+<!-- REQUIREMENTS -->
+<div class="container">
+  <section id="requirements">
+    <div class="section-label">03 — Specification</div>
+    <div class="section-title"><b>Requirements</b> & Validation</div>
+
+    <h3 style="font-size:18px;font-weight:400;margin-bottom:12px;color:var(--muted2);">Software Requirements (SRS)</h3>
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Validation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="req-id">SRS-01</td>
+          <td>Sample 4 LDRs via ADC at ≥10 Hz</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>GPIO-toggle + oscilloscope measured period confirms ≥10 Hz sampling rate</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-02</td>
+          <td>Deadband filter to prevent servo jitter when error is below threshold</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>With panel centered, servos hold still; UART error values stay inside deadband</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-03</td>
+          <td>IoT dashboard updates with &lt;3 s latency</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>Dashboard polls <code style="font-family:var(--mono)">/data</code> at 1 Hz; measured end-to-end lag well under 3 s</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-04</td>
+          <td>Hardware-timer 50 Hz PWM for servo actuation, non-blocking</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>Scoped PB1/PB2 PWM outputs — stable 20 ms period, main loop continues during PWM</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-05</td>
+          <td>Button interrupt resets servos to home position within 2 s</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>External-interrupt ISR sets flag; servos return to center on press, well under 2 s</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:18px;font-weight:400;margin:32px 0 12px;color:var(--muted2);">Hardware Requirements (HRS)</h3>
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Validation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="req-id">HRS-01</td>
+          <td>Physical rotation ≥45° pan and ≥45° tilt</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>Measured end-stop angles with a protractor on the assembled gimbal — both axes exceed 45°</td>
+        </tr>
+        <tr>
+          <td class="req-id">HRS-02</td>
+          <td>LDRs accurately capture directional light differences for tracking</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>Moved a lamp across the array; raw ADC values logged over UART show opposing pairs diverge cleanly</td>
+        </tr>
+        <tr>
+          <td class="req-id">HRS-03</td>
+          <td>MPPT / buck-boost safely regulating charging from the solar panel</td>
+          <td><span class="badge badge-amber">Partial</span></td>
+          <td>Module wired on bench; MPPT tuning against the real panel ongoing — perturb-and-observe in progress</td>
+        </tr>
+        <tr>
+          <td class="req-id">HRS-04</td>
+          <td>USB-C battery bank charging with LED power indicator</td>
+          <td><span class="badge badge-amber">Partial</span></td>
+          <td>LED mounted; remaining work is routing solar-panel rail through to USB-C output</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<!-- FIRMWARE -->
+<div class="container">
+  <section id="firmware">
+    <div class="section-label">04 — Software</div>
+    <div class="section-title"><b>Firmware</b> Architecture</div>
+
+    <p>
+      The ATmega328PB is the main MCU. It runs the tracking loop, reads the four LDRs through
+      its ADC, drives both servos with hardware-timer PWM, and talks to the INA219 over I2C. It
+      then ships the full telemetry packet (voltage, current, power, pan, tilt) to the ESP32
+      Feather over UART. The Feather acts as a serial-to-Wi-Fi bridge — parsing UART frames and
+      hosting a local HTTP server on <code style="font-family:var(--mono);font-size:13px;color:var(--amber);">/data</code>
+      that serves the latest readings as JSON.
+    </p>
+
+    <div class="arch-callout">
+      <strong>Main loop (ATmega):</strong> ADC → 4× LDR → compute horizontal &amp; vertical error
+      → deadband filter → nudge pan/tilt servo targets → update Timer1 compare registers
+      (50 Hz PWM, non-blocking) → INA219 via I2C → UART telemetry frame at 9600 baud.
+      Home-position ISR runs on external interrupt pin.
+    </div>
+
+    <div class="file-list">
+      <div class="file-chip">
+        <div class="file-chip-name">Code/main.c</div>
+        <div class="file-chip-desc">Main tracking loop: ADC sampling, deadband filter, servo PWM, UART telemetry</div>
+      </div>
+      <div class="file-chip">
+        <div class="file-chip-name">Code/i2c.c / .h</div>
+        <div class="file-chip-desc">Bare-metal TWI master driver (no Arduino Wire dependency)</div>
+      </div>
+      <div class="file-chip">
+        <div class="file-chip-name">Code/ina219.c / .h</div>
+        <div class="file-chip-desc">INA219 power monitor driver: calibration register, voltage &amp; current readout</div>
+      </div>
+      <div class="file-chip">
+        <div class="file-chip-name">Code/uart.c / .h</div>
+        <div class="file-chip-desc">UART TX/RX for debug prints and ESP32 bridge frames</div>
+      </div>
+      <div class="file-chip">
+        <div class="file-chip-name">Code/ese3500_uart.ino</div>
+        <div class="file-chip-desc">ESP32: parses UART CSV, serves GET /data as JSON, hosts static dashboard</div>
+      </div>
+      <div class="file-chip">
+        <div class="file-chip-name">Code/demo.c</div>
+        <div class="file-chip-desc">Sprint 1 single-axis validation demo (generalized into main.c)</div>
+      </div>
+      <div class="file-chip">
+        <div class="file-chip-name">include/config.h</div>
+        <div class="file-chip-desc">Build-time constants: deadband, PWM limits, UART baud rate</div>
+      </div>
+      <div class="file-chip">
+        <div class="file-chip-name">include/types.h</div>
+        <div class="file-chip-desc">Shared type definitions across drivers</div>
+      </div>
+    </div>
+
+    <div class="fig" style="margin-top:28px;">
+      <img src="../images/server.png" alt="Live ESP32 web dashboard" />
+      <div class="fig-caption">Fig 7 — Live ESP32 web dashboard (voltage, current, power, pan, tilt)</div>
+    </div>
+  </section>
+</div>
+
+<!-- PROGRESS -->
+<div class="container">
+  <section id="progress">
+    <div class="section-label">05 — Build Log</div>
+    <div class="section-title"><b>Sprint</b> Progress</div>
+
+    <!-- Sprint 1 -->
+    <div class="sprint-card">
+      <div class="sprint-title">Sprint #1</div>
+      <h3>Single-Axis Validation & Servo Control</h3>
+      <p>
+        Built a simplified single-axis solar tracker demo to validate the core tracking algorithm.
+        Two LDRs connected to PC0 and PC1 sense light direction. Timer1 generates 50 Hz PWM on PB1
+        for servo control. The tracking algorithm compares LDR readings and moves the servo toward
+        the brighter side, with a deadband filter to prevent jitter when light levels are nearly equal.
+      </p>
+      <p>
+        Key issues resolved: (1) board resets caused by servo inrush current — fixed with a separate
+        regulated servo supply rail; (2) servo drift from mismatched LDR response curves — added UART
+        ADC logging to diagnose and apply a calibration offset.
+      </p>
+      <div class="fig">
+        <img src="../images/A1597461-95D0-42B8-BAEC-2AC0EF84B3DA.jpeg" alt="Sprint 1 - single axis demo" />
+        <div class="fig-caption">Fig 8 — Sprint 1 single-axis demo running on breadboard</div>
+      </div>
+    </div>
+
+    <!-- Sprint 2 -->
+    <div class="sprint-card">
+      <div class="sprint-title">Sprint #2</div>
+      <h3>INA219 Sensing, ESP32 Dashboard & Mechanical Assembly</h3>
+      <p>
+        Abhay completed the INA219 current/voltage sensing setup — the sensor communicates over I2C
+        and provides accurate power readings from the solar panel. Ashwin got the ESP32 Feather
+        working with a local web server pulling all sensor data for the live dashboard. Arnuv printed
+        the mechanical parts for the gimbal and assembled the full pan-tilt mechanism with servos mounted.
+      </p>
+      <div class="img-grid-2">
+        <div class="fig">
+          <img src="../images/ina.jpeg" alt="INA219 current/voltage sensor" />
+          <div class="fig-caption">Fig 9 — INA219 I2C current/voltage sensor wired up</div>
+        </div>
+        <div class="fig">
+          <img src="../images/panel_mount.png" alt="3D printed panel mount" />
+          <div class="fig-caption">Fig 10 — CAD'd and printed solar panel mount</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MVP -->
+    <div class="sprint-card">
+      <div class="sprint-title">MVP Demo</div>
+      <h3>Full Integration — Tracking + Sensing + Dashboard</h3>
+      <p>
+        The ATmega tracks light on both axes, INA219 reports real-time power, UART ships telemetry
+        to the ESP32, and the web dashboard charts voltage, current, power, pan, and tilt live.
+        All 5 SRS requirements validated; HRS-01 and HRS-02 confirmed. MPPT (HRS-03) and USB-C
+        power path (HRS-04) are the two remaining open items.
+      </p>
+      <p>
+        Demo: desk lamp moved to different positions → panel visibly tracks in real time →
+        dashboard updates → home button pressed → both servos return to center.
+      </p>
+      <div class="btn-row">
+        <a href="https://drive.google.com/file/d/1Zr529B0K1XDM-7jDKDU-3Q6FYsO6Z7r6/view?usp=sharing"
+           class="btn btn-primary" target="_blank" rel="noopener">
+          ▶ Watch MVP Demo
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- FINAL REPORT -->
+<div class="container">
+  <section id="report">
+    <div class="section-label">06 — Final Report</div>
+    <div class="section-title"><b>Final</b> Report</div>
+
+    <h3 style="font-size:18px;font-weight:400;margin-bottom:16px;color:var(--muted2);">Demo Video</h3>
+    <div class="placeholder-box">
+      [ Final demo video link — add here before submission ]
+    </div>
+
+    <h3 style="font-size:18px;font-weight:400;margin:28px 0 16px;color:var(--muted2);">Final Images</h3>
+    <div class="placeholder-box">
+      [ Final build photos — add here before submission ]
+    </div>
+
+    <h3 style="font-size:18px;font-weight:400;margin:28px 0 12px;color:var(--muted2);">SRS Results</h3>
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th>Validation Outcome</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="req-id">SRS-01</td>
+          <td>Sample 4 LDRs via ADC at ≥10 Hz</td>
+          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-02</td>
+          <td>Deadband filter prevents servo jitter</td>
+          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-03</td>
+          <td>Dashboard latency &lt;3 s</td>
+          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-04</td>
+          <td>Hardware-timer 50 Hz PWM, non-blocking</td>
+          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-05</td>
+          <td>Button resets servos to home within 2 s</td>
+          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:18px;font-weight:400;margin:28px 0 12px;color:var(--muted2);">HRS Results</h3>
+    <table class="req-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th>Validation Outcome</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="req-id">HRS-01</td>
+          <td>Physical rotation ≥45° pan and ≥45° tilt</td>
+          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
+        </tr>
+        <tr>
+          <td class="req-id">HRS-02</td>
+          <td>LDRs capture directional light differences</td>
+          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
+        </tr>
+        <tr>
+          <td class="req-id">HRS-03</td>
+          <td>MPPT / buck-boost regulates charging</td>
+          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
+        </tr>
+        <tr>
+          <td class="req-id">HRS-04</td>
+          <td>USB-C battery charging with LED indicator</td>
+          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:18px;font-weight:400;margin:28px 0 12px;color:var(--muted2);">Conclusion</h3>
+    <div class="placeholder-box">
+      [ Conclusion — add here before final submission ]
+    </div>
+  </section>
+</div>
+
+<!-- LINKS -->
+<div class="container">
+  <section id="links" style="border-bottom:none;padding-bottom:32px;">
+    <div class="section-label">Resources</div>
+    <div class="section-title"><b>Links</b> & References</div>
+    <div class="btn-row">
+      <a href="https://github.com/upenn-embedded/final-project-s26-t26"
+         class="btn btn-outline" target="_blank" rel="noopener">
+        GitHub Repository ↗
+      </a>
+      <a href="https://docs.google.com/spreadsheets/d/1A1eUAg9dwYdbk0ykns5I-RBsm5lOC9emmNqb9aPvp44/edit?usp=sharing"
+         class="btn btn-outline" target="_blank" rel="noopener">
+        Bill of Materials ↗
+      </a>
+      <a href="https://drive.google.com/file/d/1Zr529B0K1XDM-7jDKDU-3Q6FYsO6Z7r6/view?usp=sharing"
+         class="btn btn-outline" target="_blank" rel="noopener">
+        MVP Demo Video ↗
+      </a>
+    </div>
+  </section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span>AAA Battery · Team 12 · ESE 3500 Spring 2026 · University of Pennsylvania</span>
+  <a href="https://github.com/upenn-embedded/final-project-s26-t26" target="_blank" rel="noopener">
+    upenn-embedded/final-project-s26-t26
+  </a>
+</footer>
+
+</body>
+</html>
