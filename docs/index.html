@@ -198,13 +198,38 @@
       overflow: hidden;
       background: var(--surface);
     }
+
+    /* Base: img fills width, no distortion */
     .fig img {
       width: 100%;
       display: block;
-      max-height: 480px;
-      object-fit: contain;
-      background: #0a0b0d;
     }
+
+    /* Diagrams / screenshots with white or dark bg — contain, no crop */
+    .fig-diagram { background: #fff; }
+    .fig-diagram img {
+      object-fit: contain;
+      background: #fff;
+      /* no height cap: let the natural aspect ratio determine height */
+    }
+
+    .fig-dark { background: #08090b; }
+    .fig-dark img {
+      object-fit: contain;
+      background: #08090b;
+    }
+
+    /* Photos — cover at a fixed height so paired cards stay aligned */
+    .fig-photo img {
+      object-fit: cover;
+      height: 340px;   /* default for paired / smaller use */
+    }
+    .fig-photo-hero img {
+      object-fit: cover;
+      height: 460px;   /* full-width hero shots */
+      object-position: center center;
+    }
+
     .fig-caption {
       font-family: var(--mono);
       font-size: 11px;
@@ -218,12 +243,6 @@
     .img-grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin: 28px 0;
-    }
-    .img-grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
       gap: 16px;
       margin: 28px 0;
     }
@@ -401,7 +420,10 @@
       .nav-links { gap: 16px; }
       .hero, .container { padding-left: 20px; padding-right: 20px; }
       .team-grid { grid-template-columns: 1fr; }
-      .img-grid-2, .img-grid-3 { grid-template-columns: 1fr; }
+      .img-grid-2 { grid-template-columns: 1fr; }
+      /* on mobile, fixed heights for photos are too tall — let them be natural */
+      .fig-photo img { height: auto; max-height: 320px; object-fit: cover; }
+      .fig-photo-hero img { height: 260px; }
       footer { flex-direction: column; gap: 12px; text-align: center; }
     }
   </style>
@@ -488,7 +510,8 @@
       to maximize power output.
     </p>
 
-    <div class="fig">
+    <!-- Block diagram: ~2:1, white bg — show full-width, contain -->
+    <div class="fig fig-diagram">
       <img src="images/AAA Proposal Block Diagram.jpg" alt="System Block Diagram" />
       <div class="fig-caption">Fig 1 — System Block Diagram</div>
     </div>
@@ -514,35 +537,27 @@
       both 3D-printed, allowing the mount to fit our specific solar panel and servo arrangement.
     </p>
 
-    <div class="img-grid-2">
-      <div class="fig">
-        <img src="images/sketch.jpg" alt="Design Sketch" />
-        <div class="fig-caption">Fig 2 — Initial design sketch (gimbal + LDR baffle)</div>
-      </div>
-      <div class="fig">
-        <img src="images/tilt_pan.jpeg" alt="Assembled pan/tilt tracker" />
-        <div class="fig-caption">Fig 3 — Assembled pan/tilt gimbal (MVP)</div>
-      </div>
+    <!-- Sketch: very wide (2.5:1), white bg — show full-width, contain -->
+    <div class="fig fig-diagram">
+      <img src="images/sketch.jpg" alt="Design Sketch" />
+      <div class="fig-caption">Fig 2 — Early design sketch: pan-tilt gimbal, LDR baffle, electronics enclosure</div>
     </div>
 
-    <div class="img-grid-3">
-      <div class="fig">
-        <img src="images/panel_mount.png" alt="3D printed solar panel mount" />
-        <div class="fig-caption">Fig 4 — 3D printed solar panel mount</div>
+    <!-- Servo + solar panel: both 4:3 — pair at matching height -->
+    <div class="img-grid-2">
+      <div class="fig fig-photo">
+        <img src="images/servo.jpeg" alt="Servo mounted in 3D-printed bracket" />
+        <div class="fig-caption">Fig 3 — Servo in 3D-printed pan-tilt bracket</div>
       </div>
-      <div class="fig">
-        <img src="images/servo.jpeg" alt="Servo assembly" />
-        <div class="fig-caption">Fig 5 — Servo assembly</div>
-      </div>
-      <div class="fig">
-        <img src="images/solar_panel.jpeg" alt="Solar panel" />
-        <div class="fig-caption">Fig 6 — Solar panel</div>
+      <div class="fig fig-photo">
+        <img src="images/solar_panel.jpeg" alt="Small solar panel with leads" />
+        <div class="fig-caption">Fig 4 — Solar panel with output leads</div>
       </div>
     </div>
 
     <p>
-      The CAD files for the solar mounting plate (SolidWorks + STL) are included in the
-      repository under <code style="font-family:var(--mono);font-size:13px;color:var(--amber);">CAD/</code>.
+      The CAD files for the solar mounting plate (SolidWorks + STL) are in the repository under
+      <code style="font-family:var(--mono);font-size:13px;color:var(--amber);">CAD/</code>.
       All mechanical parts were 3D printed in-lab.
     </p>
   </section>
@@ -695,9 +710,10 @@
       </div>
     </div>
 
-    <div class="fig" style="margin-top:28px;">
+    <!-- Dashboard screenshot: ~2:1, dark bg — show full-width, contain -->
+    <div class="fig fig-dark" style="margin-top:28px;">
       <img src="images/server.png" alt="Live ESP32 web dashboard" />
-      <div class="fig-caption">Fig 7 — Live ESP32 web dashboard (voltage, current, power, pan, tilt)</div>
+      <div class="fig-caption">Fig 5 — Live ESP32 web dashboard (voltage, current, power, pan, tilt)</div>
     </div>
   </section>
 </div>
@@ -723,9 +739,9 @@
         regulated servo supply rail; (2) servo drift from mismatched LDR response curves — added UART
         ADC logging to diagnose and apply a calibration offset.
       </p>
-      <div class="fig">
+      <div class="fig fig-photo-hero">
         <img src="images/A1597461-95D0-42B8-BAEC-2AC0EF84B3DA.jpeg" alt="Sprint 1 - single axis demo" />
-        <div class="fig-caption">Fig 8 — Sprint 1 single-axis demo running on breadboard</div>
+        <div class="fig-caption">Fig 6 — Sprint 1: ATmega328PB + LDRs + servo on breadboard, single-axis tracking demo</div>
       </div>
     </div>
 
@@ -739,15 +755,10 @@
         working with a local web server pulling all sensor data for the live dashboard. Arnuv printed
         the mechanical parts for the gimbal and assembled the full pan-tilt mechanism with servos mounted.
       </p>
-      <div class="img-grid-2">
-        <div class="fig">
-          <img src="images/ina.jpeg" alt="INA219 current/voltage sensor" />
-          <div class="fig-caption">Fig 9 — INA219 I2C current/voltage sensor wired up</div>
-        </div>
-        <div class="fig">
-          <img src="images/panel_mount.png" alt="3D printed panel mount" />
-          <div class="fig-caption">Fig 10 — CAD'd and printed solar panel mount</div>
-        </div>
+      <!-- INA219 breadboard photo: 4:3, full-width hero -->
+      <div class="fig fig-photo-hero">
+        <img src="images/ina.jpeg" alt="INA219 current/voltage sensor wired up" />
+        <div class="fig-caption">Fig 7 — INA219 power monitor wired to the ATmega over I2C</div>
       </div>
     </div>
 
@@ -765,7 +776,14 @@
         Demo: desk lamp moved to different positions → panel visibly tracks in real time →
         dashboard updates → home button pressed → both servos return to center.
       </p>
-      <div class="btn-row">
+
+      <!-- Full integrated assembly: 4:3 hero photo -->
+      <div class="fig fig-photo-hero">
+        <img src="images/tilt_pan.jpeg" alt="Full MVP assembly: breadboard, ATmega, and 3D-printed gimbal" />
+        <div class="fig-caption">Fig 8 — MVP assembly: ATmega + INA219 breadboard with 3D-printed pan-tilt gimbal</div>
+      </div>
+
+      <div class="btn-row" style="margin-top:20px;">
         <a href="https://drive.google.com/file/d/1Zr529B0K1XDM-7jDKDU-3Q6FYsO6Z7r6/view?usp=sharing"
            class="btn btn-primary" target="_blank" rel="noopener">
           ▶ Watch MVP Demo
