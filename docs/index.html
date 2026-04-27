@@ -340,7 +340,7 @@
         </div>
       </div>
       <div class="team-card">
-        <img class="team-photo" src="images/arnuv.jpeg" alt="Arnuv Batra" />
+        <img class="team-photo" src="images/arnuv.jpeg" alt="Arnuv Batra" style="object-position: center 20%;" />
         <div class="team-info">
           <div class="team-name">Arnuv Batra</div>
           <div class="team-email">avbatra@seas.upenn.edu</div>
@@ -570,9 +570,52 @@
     </table>
 
     <h3>Conclusion</h3>
-    <div class="placeholder-box">
-      [ Conclusion — add here before final submission ]
-    </div>
+
+    <p>
+      Building this turned out to be a much broader integration exercise
+      than any of us expected when we proposed it. We were combining analog sensing, real-time
+      servo control, I2C, IoT, mechanical design, and power electronics, and getting all of those subsystems to coexist on one MCU was the most valuable
+      lesson of the semester — not any one technology in isolation.
+    </p>
+
+    <p>
+      What we're most proud of is that every software requirement we wrote up front was validated
+      by demo day. The Timer1-driven 50 Hz PWM stayed clean across the full duty-cycle range
+      (Fig 7 &amp; 8); the deadband filter killed jitter without killing responsiveness; the
+      home-button interrupt reset the servos well under our 2 s budget; and the live dashboard
+      pulled JSON over Wi-Fi and rendered with sub-second latency. The architectural decision to
+      use the ESP32 Feather as a serial-to-Wi-Fi bridge — rather than try to do networking on the
+      AVR itself — paid off: it kept the main loop tight and let us iterate on the dashboard
+      independently of the firmware.
+    </p>
+
+    <p>
+      Several things forced us to change approach mid-project. Sprint #1 was almost derailed by
+      mysterious board resets that turned out to be servo inrush current dragging the regulator
+      down; switching to a dedicated servo supply rail fixed it instantly, but we burned a couple
+      of hours assuming it was a code bug first. The LDR pairs also didn't match each other as
+      well as we had assumed — instead of trying to find "matched" sensors, we accepted the
+      variance and added per-channel calibration offsets, diagnosed by streaming raw ADC values
+      over UART. 
+    </p>
+
+    <p>
+      The biggest unanticipated obstacle was on the power-electronics side. Our buck-boost
+      regulator and USB-C charging path were both wired correctly, but the power pack's input
+      impedance was too high for our small indoor solar panel to drive — the impedance mismatch
+      meant the panel delivered essentially no power once connected to the pack. The topology is
+      right; the panel size isn't. With a larger panel (or a less demanding pack) the same circuit
+      would charge, which is why HRS-03 and HRS-04 ended up not being fully fulfilled. If we were doing it again, we would size the panel against the pack's input
+      requirements at the very start of the project rather than treating them as independent
+      design problems.
+    </p>
+
+    <p>
+      <strong>Next steps</strong>, if we kept going: take the rig outside with a larger panel to
+      actually close out the MPPT and USB-C charging requirements; tighten the perturb-and-observe
+      MPPT loop now that the INA219 telemetry plumbing is in place; and ultimately make the system
+      battery-only and weatherproof so it can run unattended. 
+    </p>
   </section>
 
   <section id="links">
