@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 -c \"import json; nb=json.load\\(open\\(r''c:\\\\Users\\\\ashwi\\\\Downloads\\\\ESE_2240_Spring_2026_Lab_5_Template.ipynb''\\)\\); [print\\(i, c[''cell_type''], \\(''''.join\\(c[''source'']\\)\\)[:100]\\) for i,c in enumerate\\(nb[''cells'']\\)]\")"
+      "Bash(python3 -c \"import json; nb=json.load\\(open\\(r''c:\\\\Users\\\\ashwi\\\\Downloads\\\\ESE_2240_Spring_2026_Lab_5_Template.ipynb''\\)\\); [print\\(i, c[''cell_type''], \\(''''.join\\(c[''source'']\\)\\)[:100]\\) for i,c in enumerate\\(nb[''cells'']\\)]\")",
+      "Bash(git push *)"
     ]
   }
 }
