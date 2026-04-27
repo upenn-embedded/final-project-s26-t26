@@ -339,6 +339,7 @@
         </div>
       </div>
       <div class="team-card">
+        <img class="team-photo" src="images/arnuv.jpeg" alt="Arnuv Batra" />
         <div class="team-info">
           <div class="team-name">Arnuv Batra</div>
           <div class="team-email">avbatra@seas.upenn.edu</div>
@@ -622,35 +623,100 @@
       [ Final demo video link — add here before submission ]
     </div>
 
-    <h3>Final Images</h3>
-    <div class="placeholder-box">
-      [ Final build photos — add here before submission ]
+    <h3>Servo PWM Validation</h3>
+    <p>
+      Oscilloscope captures of the Timer1 PWM output at the two extremes of the
+      servo range — confirming the 50 Hz frame period and clean duty-cycle modulation.
+    </p>
+    <div class="img-grid-2">
+      <div class="fig fig-photo">
+        <img src="images/min_duty_cycle.jpg" alt="Oscilloscope capture: minimum servo duty cycle" />
+        <div class="fig-caption">Fig 9 — Minimum duty cycle (servo at one end-stop)</div>
+      </div>
+      <div class="fig fig-photo">
+        <img src="images/max_duty_cycle.jpg" alt="Oscilloscope capture: maximum servo duty cycle" />
+        <div class="fig-caption">Fig 10 — Maximum duty cycle (servo at the other end-stop)</div>
+      </div>
     </div>
 
     <h3>SRS Results</h3>
     <table>
       <thead>
-        <tr><th>ID</th><th>Description</th><th>Validation Outcome</th></tr>
+        <tr><th>ID</th><th>Description</th><th>Status</th><th>Validation Outcome</th></tr>
       </thead>
       <tbody>
-        <tr><td class="req-id">SRS-01</td><td>Sample 4 LDRs via ADC at ≥10 Hz</td><td>[ To be filled in for final submission ]</td></tr>
-        <tr><td class="req-id">SRS-02</td><td>Deadband filter prevents servo jitter</td><td>[ To be filled in for final submission ]</td></tr>
-        <tr><td class="req-id">SRS-03</td><td>Dashboard latency &lt;3 s</td><td>[ To be filled in for final submission ]</td></tr>
-        <tr><td class="req-id">SRS-04</td><td>Hardware-timer 50 Hz PWM, non-blocking</td><td>[ To be filled in for final submission ]</td></tr>
-        <tr><td class="req-id">SRS-05</td><td>Button resets servos to home within 2 s</td><td>[ To be filled in for final submission ]</td></tr>
+        <tr>
+          <td class="req-id">SRS-01</td>
+          <td>Sample 4 LDRs via ADC at ≥10 Hz</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>GPIO-toggle measured on scope confirmed sustained sampling at well over 10 Hz.</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-02</td>
+          <td>Deadband filter prevents servo jitter</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>With the panel centered, both servos held still; UART error values stayed inside the configured deadband.</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-03</td>
+          <td>Dashboard latency &lt;3 s</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>Dashboard polls <code>/data</code> at 1 Hz; observed end-to-end lag from a movement to the chart update was well under 3 s.</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-04</td>
+          <td>Hardware-timer 50 Hz PWM, non-blocking</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>Scoped PB1/PB2 outputs show a stable 20 ms period at both min and max duty (Fig 9 &amp; 10); main loop continues during PWM generation.</td>
+        </tr>
+        <tr>
+          <td class="req-id">SRS-05</td>
+          <td>Button resets servos to home within 2 s</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>External-interrupt ISR sets a flag and both servos return to center on press, well under 2 s.</td>
+        </tr>
       </tbody>
     </table>
 
     <h3>HRS Results</h3>
     <table>
       <thead>
-        <tr><th>ID</th><th>Description</th><th>Validation Outcome</th></tr>
+        <tr><th>ID</th><th>Description</th><th>Status</th><th>Validation Outcome</th></tr>
       </thead>
       <tbody>
-        <tr><td class="req-id">HRS-01</td><td>Physical rotation ≥45° pan and ≥45° tilt</td><td>[ To be filled in for final submission ]</td></tr>
-        <tr><td class="req-id">HRS-02</td><td>LDRs capture directional light differences</td><td>[ To be filled in for final submission ]</td></tr>
-        <tr><td class="req-id">HRS-03</td><td>MPPT / buck-boost regulates charging</td><td>[ To be filled in for final submission ]</td></tr>
-        <tr><td class="req-id">HRS-04</td><td>USB-C battery charging with LED indicator</td><td>[ To be filled in for final submission ]</td></tr>
+        <tr>
+          <td class="req-id">HRS-01</td>
+          <td>Physical rotation ≥45° pan and ≥45° tilt</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>End-stop angles measured with a protractor on the assembled gimbal — both axes exceed 45°.</td>
+        </tr>
+        <tr>
+          <td class="req-id">HRS-02</td>
+          <td>LDRs capture directional light differences</td>
+          <td><span class="badge badge-green">Achieved</span></td>
+          <td>Lamp moved across the array; raw ADC values logged over UART showed opposing pairs diverging cleanly with light direction.</td>
+        </tr>
+        <tr>
+          <td class="req-id">HRS-03</td>
+          <td>MPPT / buck-boost regulates charging</td>
+          <td><span class="badge badge-amber">Partial</span></td>
+          <td>
+            The buck-boost module is wired and switching, but our power pack's input impedance was too high
+            for the small indoor solar panel to drive — the impedance mismatch caused the panel to deliver
+            essentially no power once connected. At larger scale (bigger panel, higher available current) the
+            topology works as designed; the limitation is the size of the panel we used, not the regulator stage.
+          </td>
+        </tr>
+        <tr>
+          <td class="req-id">HRS-04</td>
+          <td>USB-C battery charging with LED indicator</td>
+          <td><span class="badge badge-amber">Partial</span></td>
+          <td>
+            Same root cause as HRS-03. The USB-C output path is wired and the LED indicator lights up under
+            external supply, but the panel can't push enough current through the pack's input impedance
+            indoors to register as an actual charge event. A larger panel would resolve this.
+          </td>
+        </tr>
       </tbody>
     </table>
 
