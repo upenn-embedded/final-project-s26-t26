@@ -221,19 +221,19 @@ Live demo flow: point a desk lamp at the panel → the gimbal tracks toward it o
 
 | ID     | Description                                          | Status       | Validation                                                                                            |
 | ------ | ---------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------- |
-| HRS-01 | Physical rotation >=45 deg pan and >=45 deg tilt     | Achieved     | Measured end-stop angles with a protractor on the assembled gimbal - both axes exceed 45 deg.         |
+| HRS-01 | Physical rotation >=45 deg pan and >=45 deg tilt     | Achieved     | Both axes exceed 45 degrees visually - pan is 180 degrees of motion and tilt is ~80.         |
 | HRS-02 | LDRs capture light differences for tracking          | Achieved     | Moved a phone flashlight across the LDR array and logged raw ADC values over UART; opposing pairs diverge cleanly.|
 | HRS-03 | MPPT / buck-boost regulating charging from the panel | Not achieved | Module is wired on the bench but MPPT tuning against the real panel is still open.                    |
 | HRS-04 | USB-C battery-bank charging with LED power indicator | Partial      | LED is mounted; remaining work is wiring the solar-panel rail through to the USB-C output.            |
 
 <!-- markdownlint-enable MD060 -->
 
-**How we collected the data:** protractor measurement on the physical gimbal (HRS-01); LDR raw ADC logs streamed over UART and cross-checked against the dashboard (HRS-02); INA219 voltage/current on the dashboard while the panel is under lamp (feeds into HRS-03 validation for Final Demo).
+**How we collected the data:** visual measurement on the physical gimbal (HRS-01); LDR raw ADC logs streamed over UART and cross-checked against the dashboard (HRS-02); INA219 voltage/current on the dashboard while the panel is under lamp (feeds into HRS-03 validation for Final Demo).
 
 ### 6. Remaining elements to complete the project
 
-- **Mechanical casework** — enclosure base for the electronics is printed but needs fit-and-finish (cable routing, lid, button cutout).
-- **GUI / web portal** — the dashboard in [index.html](index.html) is live and charting voltage/current/power/pan/tilt; remaining polish is a dedicated history chart for power and an MPPT efficiency plot once HRS-03 lands.
+- **Mechanical enclosure** — enclosure base for the electronics is printing but needs fit-and-finish (cable routing, lid, button cutout).
+- **GUI / web portal** — the dashboard in [index.html](index.html) is live and charting voltage/current/power/pan/tilt; remaining polish is a dedicated history chart for power and an MPPT efficiency plot once HRS-03 is done.
 - **Power path** — finish HRS-04 by routing the regulated panel output through the USB-C charger IC and wiring the "power OK" LED off that rail.
 - **MPPT tuning** — sweep the buck converter duty cycle and log power to find the peak (HRS-03).
 

@@ -4,188 +4,147 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AAA Battery — Dual-Axis Solar Tracker | ESE 3500</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg:        #0c0d0f;
-      --surface:   #13151a;
-      --surface2:  #191c24;
-      --border:    #1e2128;
-      --border2:   #2a2d38;
-      --amber:     #f5a623;
-      --amber-dim: #7a5212;
-      --amber-bg:  #1a1206;
-      --green:     #3dd68c;
-      --green-dim: #1a5c3a;
-      --blue:      #4d9de0;
-      --red:       #e05252;
-      --text:      #e8eaf0;
-      --muted:     #5a5f72;
-      --muted2:    #8891a8;
-      --mono:      'DM Mono', monospace;
-      --sans:      'DM Sans', sans-serif;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { scroll-behavior: smooth; }
+    * { box-sizing: border-box; }
 
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      font-size: 15px;
-      line-height: 1.7;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #606c71;
+      background: #ffffff;
+      word-wrap: break-word;
     }
 
-    /* scanline atmosphere */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
-      pointer-events: none;
-      z-index: 9999;
+    a { color: #1e6bb8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    code {
+      padding: 2px 4px;
+      font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      font-size: 0.9em;
+      color: #567482;
+      background: #f3f6fa;
+      border: 1px solid #dce6f0;
+      border-radius: 0.3rem;
     }
 
-    /* ── NAV ── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(12,13,15,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 48px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 52px;
+    /* ── Header ── */
+    .page-header {
+      color: #fff;
+      text-align: center;
+      background: linear-gradient(120deg, #155799, #159957);
+      padding: 5rem 6rem;
     }
-    .nav-brand {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.18em;
+    .page-header .eyebrow {
+      margin: 0 0 0.5rem;
+      font-size: 0.875rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--muted2);
+      opacity: 0.85;
     }
-    .nav-brand span { color: var(--amber); }
-    .nav-links {
-      display: flex;
-      gap: 28px;
-      list-style: none;
-    }
-    .nav-links a {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--amber); }
-
-    /* ── HERO ── */
-    .hero {
-      padding: 80px 48px 64px;
-      border-bottom: 1px solid var(--border);
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-    .hero-tag {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin-bottom: 16px;
-    }
-    .hero h1 {
-      font-size: clamp(36px, 5vw, 62px);
+    .page-header h1 {
+      margin: 0 0 1rem;
+      font-size: 3rem;
       font-weight: 300;
-      letter-spacing: -1.5px;
-      line-height: 1.05;
-      margin-bottom: 24px;
+      line-height: 1.1;
     }
-    .hero h1 b { font-weight: 500; }
-    .hero-sub {
-      font-size: 17px;
-      color: var(--muted2);
-      max-width: 640px;
-      line-height: 1.65;
-      margin-bottom: 36px;
-    }
-    .hero-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 24px;
-    }
-    .meta-chip {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      padding: 6px 14px;
-      border: 1px solid var(--border2);
-      border-radius: 20px;
-    }
-    .meta-chip span { color: var(--text); }
-
-    /* ── MAIN LAYOUT ── */
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 48px;
-    }
-
-    /* ── SECTIONS ── */
-    section {
-      padding: 64px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    section:last-child { border-bottom: none; }
-
-    .section-label {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin-bottom: 10px;
-    }
-    .section-title {
-      font-size: 28px;
+    .page-header h1 b { font-weight: 700; }
+    .page-header .tagline {
+      margin: 0 auto 1.5rem;
+      max-width: 720px;
+      font-size: 1.125rem;
       font-weight: 300;
-      letter-spacing: -0.5px;
-      margin-bottom: 24px;
+      opacity: 0.92;
     }
-    .section-title b { font-weight: 500; }
+    .page-header .chips { line-height: 2.25; }
+    .page-header .chip {
+      display: inline-block;
+      margin: 0 4px;
+      padding: 4px 12px;
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius: 0.3rem;
+      font-size: 0.875rem;
+    }
+    .page-header .chip b { font-weight: 600; }
 
-    p { color: var(--muted2); line-height: 1.75; margin-bottom: 16px; }
-    p:last-child { margin-bottom: 0; }
+    /* ── Content ── */
+    .main-content {
+      max-width: 64rem;
+      padding: 2rem 6rem;
+      margin: 0 auto;
+      font-size: 1.0625rem;
+    }
+    .main-content section { margin-bottom: 2.5rem; }
 
-    /* ── TEAM CARDS ── */
+    .main-content h2 {
+      margin: 2rem 0 0.75rem;
+      color: #159957;
+      font-weight: normal;
+      font-size: 1.625rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid #eaecef;
+    }
+    .main-content h3 {
+      margin: 1.5rem 0 0.75rem;
+      color: #159957;
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+    .main-content p { margin: 0 0 1rem; }
+    .main-content ul, .main-content ol { margin: 0 0 1rem; padding-left: 1.5rem; }
+
+    /* ── Tables ── */
+    .main-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.95rem;
+    }
+    .main-content table th,
+    .main-content table td {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #e1e4e8;
+      text-align: left;
+      vertical-align: top;
+    }
+    .main-content table th {
+      background: #f3f6fa;
+      color: #24292e;
+      font-weight: 600;
+    }
+    .main-content table tr:nth-child(2n) td { background: #fafbfc; }
+
+    .req-id {
+      font-family: Consolas, monospace;
+      color: #1e6bb8;
+      white-space: nowrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 0.3rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .badge-green { background: #dcffe4; color: #1a7f37; }
+    .badge-amber { background: #fff8c5; color: #9a6700; }
+    .badge-red   { background: #ffebe9; color: #cf222e; }
+
+    /* ── Team ── */
     .team-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 24px;
+      gap: 1rem;
+      margin: 1rem 0 1.5rem;
     }
     .team-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      border: 1px solid #e1e4e8;
+      border-radius: 0.3rem;
       overflow: hidden;
-      position: relative;
-    }
-    .team-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 20px; right: 20px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
-      z-index: 1;
+      background: #fff;
     }
     .team-photo {
       width: 100%;
@@ -193,290 +152,178 @@
       object-fit: cover;
       object-position: center top;
       display: block;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #e1e4e8;
     }
-    .team-info { padding: 16px 20px 20px; }
-    .team-name { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
-    .team-email { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .team-info { padding: 0.75rem 1rem; }
+    .team-name { font-weight: 600; color: #24292e; margin-bottom: 2px; }
+    .team-email { font-family: Consolas, monospace; font-size: 0.85rem; color: #586069; }
 
-    /* ── IMAGE FIGURE ── */
+    /* ── Figures ── */
     .fig {
-      margin: 28px 0;
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      margin: 1.25rem 0;
+      border: 1px solid #e1e4e8;
+      border-radius: 0.3rem;
       overflow: hidden;
-      background: var(--surface);
-    }
-
-    /* Base: img fills width, no distortion */
-    .fig img {
-      width: 100%;
-      display: block;
-    }
-
-    /* Diagrams / screenshots with white or dark bg — contain, no crop */
-    .fig-diagram { background: #fff; }
-    .fig-diagram img {
-      object-fit: contain;
       background: #fff;
-      /* no height cap: let the natural aspect ratio determine height */
     }
-
-    .fig-dark { background: #08090b; }
-    .fig-dark img {
-      object-fit: contain;
-      background: #08090b;
-    }
-
-    /* Photos — cover at a fixed height so paired cards stay aligned */
-    .fig-photo img {
-      object-fit: cover;
-      height: 340px;   /* default for paired / smaller use */
-    }
-    .fig-photo-hero img {
-      object-fit: cover;
-      height: 460px;   /* full-width hero shots */
-      object-position: center center;
-    }
-
+    .fig img { width: 100%; display: block; }
+    .fig-photo img { object-fit: cover; height: 340px; }
+    .fig-photo-hero img { object-fit: cover; height: 460px; }
     .fig-caption {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      padding: 10px 16px;
-      border-top: 1px solid var(--border);
-      letter-spacing: 0.05em;
+      padding: 0.5rem 0.75rem;
+      background: #f6f8fa;
+      border-top: 1px solid #e1e4e8;
+      font-size: 0.875rem;
+      color: #586069;
     }
 
-    /* ── TWO-UP IMAGE GRID ── */
     .img-grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin: 28px 0;
+      gap: 1rem;
+      margin: 1.25rem 0;
     }
 
-    /* ── REQ TABLE ── */
-    .req-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      font-size: 14px;
-    }
-    .req-table th {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-align: left;
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border2);
-    }
-    .req-table td {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--border);
-      color: var(--muted2);
-      vertical-align: top;
-    }
-    .req-table tr:last-child td { border-bottom: none; }
-    .req-table tr:hover td { background: var(--surface2); }
-    .req-id {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--amber);
-      white-space: nowrap;
-    }
-    .badge {
-      display: inline-block;
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      padding: 3px 9px;
-      border-radius: 4px;
-      text-transform: uppercase;
-    }
-    .badge-green { background: var(--green-dim); color: var(--green); }
-    .badge-amber { background: var(--amber-bg); color: var(--amber); }
-    .badge-red   { background: #2a1212; color: var(--red); }
-
-    /* ── SPRINT BLOCKS ── */
-    .sprint-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 28px 32px;
-      margin-bottom: 20px;
-      position: relative;
-      overflow: hidden;
-    }
-    .sprint-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 24px; right: 24px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
-    }
-    .sprint-title {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin-bottom: 12px;
-    }
-    .sprint-card h3 {
-      font-size: 20px;
-      font-weight: 400;
-      margin-bottom: 16px;
-    }
-    .sprint-card p { margin-bottom: 12px; }
-
-    /* ── CODE FILE LIST ── */
+    /* ── File list ── */
     .file-list {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 10px;
-      margin-top: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.5rem;
+      margin: 1rem 0;
     }
     .file-chip {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px 14px;
-      font-family: var(--mono);
-      font-size: 12px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #e1e4e8;
+      border-radius: 0.3rem;
+      background: #f6f8fa;
     }
-    .file-chip-name { color: var(--amber); margin-bottom: 3px; }
-    .file-chip-desc { font-size: 10px; color: var(--muted); line-height: 1.4; }
-
-    /* ── BLOCK DIAGRAM / ARCHITECTURE ── */
-    .arch-callout {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--amber);
-      border-radius: 0 8px 8px 0;
-      padding: 16px 20px;
-      margin: 20px 0;
-      font-size: 14px;
-      color: var(--muted2);
+    .file-chip-name {
+      font-family: Consolas, monospace;
+      color: #1e6bb8;
+      font-size: 0.9rem;
+      margin-bottom: 2px;
     }
-    .arch-callout strong { color: var(--text); font-weight: 500; }
+    .file-chip-desc { font-size: 0.825rem; color: #586069; }
 
-    /* ── DEMO BUTTON ── */
-    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 22px;
-      border-radius: 6px;
-      font-family: var(--mono);
-      font-size: 12px;
-      letter-spacing: 0.08em;
+    /* ── Sprint cards ── */
+    .sprint-card {
+      border: 1px solid #e1e4e8;
+      border-left: 4px solid #159957;
+      border-radius: 0.3rem;
+      padding: 1.25rem 1.5rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .sprint-card .sprint-title {
+      color: #1e6bb8;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      text-decoration: none;
-      transition: all 0.2s;
-      cursor: pointer;
-      border: none;
+      margin-bottom: 0.25rem;
     }
-    .btn-primary {
-      background: var(--amber);
-      color: #000;
-      font-weight: 500;
-    }
-    .btn-primary:hover { background: #ffc04d; }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid var(--border2);
-      color: var(--muted2);
-    }
-    .btn-outline:hover { border-color: var(--amber); color: var(--amber); }
+    .sprint-card h3 { margin-top: 0; }
 
-    /* ── RESULTS PLACEHOLDER ── */
-    .placeholder-box {
-      border: 1px dashed var(--border2);
-      border-radius: 8px;
-      padding: 40px;
-      text-align: center;
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      margin: 20px 0;
+    /* ── Callout ── */
+    .callout {
+      background: #f3f6fa;
+      border-left: 4px solid #1e6bb8;
+      padding: 0.75rem 1rem;
+      margin: 1rem 0;
+      font-size: 0.95rem;
     }
+    .callout strong { color: #24292e; }
 
-    /* ── FOOTER ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 48px;
-      max-width: 1100px;
-      margin: 0 auto;
+    /* ── Buttons ── */
+    .btn-row {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.08em;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
     }
-    footer a { color: var(--muted); text-decoration: none; }
-    footer a:hover { color: var(--amber); }
+    .btn {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border: 1px solid #e1e4e8;
+      border-radius: 0.3rem;
+      color: #1e6bb8;
+      background: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .btn:hover { border-color: #1e6bb8; text-decoration: none; }
+    .btn-primary {
+      background: #159957;
+      color: #fff;
+      border-color: #159957;
+    }
+    .btn-primary:hover {
+      background: #167b48;
+      border-color: #167b48;
+      color: #fff;
+    }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      nav { padding: 0 20px; }
-      .nav-links { gap: 16px; }
-      .hero, .container { padding-left: 20px; padding-right: 20px; }
+    /* ── Placeholder ── */
+    .placeholder-box {
+      border: 1px dashed #c5d0d6;
+      border-radius: 0.3rem;
+      padding: 2rem;
+      text-align: center;
+      color: #819198;
+      font-style: italic;
+      margin: 1rem 0;
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+      max-width: 64rem;
+      padding: 1.5rem 6rem 2.5rem;
+      margin: 0 auto;
+      border-top: 1px solid #eaecef;
+      font-size: 0.9rem;
+      color: #586069;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 64em) {
+      .page-header { padding: 3rem 2rem; }
+      .page-header h1 { font-size: 2.25rem; }
+      .main-content { padding: 1.5rem 2rem; font-size: 1rem; }
+      .site-footer { padding: 1.5rem 2rem 2rem; flex-direction: column; gap: 0.5rem; text-align: center; }
       .team-grid { grid-template-columns: 1fr; }
       .img-grid-2 { grid-template-columns: 1fr; }
-      /* on mobile, fixed heights for photos are too tall — let them be natural */
-      .fig-photo img { height: auto; max-height: 320px; object-fit: cover; }
+      .fig-photo img { height: auto; max-height: 320px; }
       .fig-photo-hero img { height: 260px; }
-      footer { flex-direction: column; gap: 12px; text-align: center; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-brand">Team 12 · <span>AAA Battery</span> · ESE 3500</div>
-  <ul class="nav-links">
-    <li><a href="#abstract">Abstract</a></li>
-    <li><a href="#design">Design</a></li>
-    <li><a href="#firmware">Firmware</a></li>
-    <li><a href="#progress">Progress</a></li>
-    <li><a href="#results">Results</a></li>
-    <li><a href="#report">Report</a></li>
-  </ul>
-</nav>
-
-<!-- HERO -->
-<div class="container">
-  <div class="hero">
-    <div class="hero-tag">ESE 3500 · Spring 2026 · Final Project</div>
-    <h1><b>Dual-Axis</b><br>Solar Tracker</h1>
-    <p class="hero-sub">
-      An embedded system that autonomously orients a solar panel toward the brightest
-      light source, combining analog sensing, real-time servo control, power electronics,
-      and a live IoT dashboard — all running on a bare-metal ATmega328PB.
-    </p>
-    <div class="hero-meta">
-      <div class="meta-chip">Team Name: <span>AAA Battery</span></div>
-      <div class="meta-chip">MCU: <span>ATmega328PB</span></div>
-      <div class="meta-chip">IoT: <span>ESP32 Feather</span></div>
-      <div class="meta-chip">Sensing: <span>4× LDR + INA219</span></div>
-      <div class="meta-chip">Actuation: <span>2× Micro Servo</span></div>
-    </div>
+<header class="page-header">
+  <p class="eyebrow">ESE 3500 · Spring 2026 · Final Project · Team 12 — AAA Battery</p>
+  <h1><b>Dual-Axis</b> Solar Tracker</h1>
+  <p class="tagline">
+    An embedded system that autonomously orients a solar panel toward the brightest
+    light source — combining analog sensing, real-time servo control, power electronics,
+    and a live IoT dashboard on a bare-metal ATmega328PB.
+  </p>
+  <div class="chips">
+    <span class="chip">Team: <b>AAA Battery</b></span>
+    <span class="chip">MCU: <b>ATmega328PB</b></span>
+    <span class="chip">IoT: <b>ESP32 Feather</b></span>
+    <span class="chip">Sensing: <b>4× LDR + INA219</b></span>
+    <span class="chip">Actuation: <b>2× Micro Servo</b></span>
   </div>
-</div>
+</header>
 
-<!-- TEAM -->
-<div class="container">
+<main class="main-content">
+
   <section id="team">
-    <div class="section-label">Team</div>
-    <div class="section-title"><b>Meet</b> the Team</div>
+    <h2>Team</h2>
     <div class="team-grid">
       <div class="team-card">
         <div class="team-info">
@@ -499,13 +346,9 @@
       </div>
     </div>
   </section>
-</div>
 
-<!-- ABSTRACT -->
-<div class="container">
   <section id="abstract">
-    <div class="section-label">01 — Overview</div>
-    <div class="section-title"><b>Abstract</b> & Motivation</div>
+    <h2>Abstract &amp; Motivation</h2>
 
     <p>
       Our project is a dual-axis solar tracker that automatically orients a solar panel toward
@@ -526,25 +369,20 @@
       to maximize power output.
     </p>
 
-    <!-- Block diagram: ~2:1, white bg — show full-width, contain -->
-    <div class="fig fig-diagram">
+    <div class="fig">
       <img src="images/AAA Proposal Block Diagram.jpg" alt="System Block Diagram" />
       <div class="fig-caption">Fig 1 — System Block Diagram</div>
     </div>
 
-    <div class="arch-callout">
+    <div class="callout">
       <strong>Architecture in one sentence:</strong> Four LDRs feed the ATmega ADC → tracking
       algorithm drives two servo PWMs → INA219 over I2C reports panel power → UART frame ships
       telemetry to ESP32 → ESP32 hosts a live JSON endpoint and web dashboard over Wi-Fi.
     </div>
   </section>
-</div>
 
-<!-- DESIGN -->
-<div class="container">
   <section id="design">
-    <div class="section-label">02 — Hardware</div>
-    <div class="section-title"><b>Design</b> & Mechanical</div>
+    <h2>Design &amp; Mechanical</h2>
 
     <p>
       The LDR quadrant divider is the most critical design feature — a small cross-shaped wall
@@ -553,13 +391,11 @@
       both 3D-printed, allowing the mount to fit our specific solar panel and servo arrangement.
     </p>
 
-    <!-- Sketch: very wide (2.5:1), white bg — show full-width, contain -->
-    <div class="fig fig-diagram">
+    <div class="fig">
       <img src="images/sketch.jpg" alt="Design Sketch" />
       <div class="fig-caption">Fig 2 — Early design sketch: pan-tilt gimbal, LDR baffle, electronics enclosure</div>
     </div>
 
-    <!-- Servo + solar panel: both 4:3 — pair at matching height -->
     <div class="img-grid-2">
       <div class="fig fig-photo">
         <img src="images/servo.jpeg" alt="Servo mounted in 3D-printed bracket" />
@@ -573,27 +409,17 @@
 
     <p>
       The CAD files for the solar mounting plate (SolidWorks + STL) are in the repository under
-      <code style="font-family:var(--mono);font-size:13px;color:var(--amber);">CAD/</code>.
-      All mechanical parts were 3D printed in-lab.
+      <code>CAD/</code>. All mechanical parts were 3D printed in-lab.
     </p>
   </section>
-</div>
 
-<!-- REQUIREMENTS -->
-<div class="container">
   <section id="requirements">
-    <div class="section-label">03 — Specification</div>
-    <div class="section-title"><b>Requirements</b> & Validation</div>
+    <h2>Requirements &amp; Validation</h2>
 
-    <h3 style="font-size:18px;font-weight:400;margin-bottom:12px;color:var(--muted2);">Software Requirements (SRS)</h3>
-    <table class="req-table">
+    <h3>Software Requirements (SRS)</h3>
+    <table>
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Description</th>
-          <th>Status</th>
-          <th>Validation</th>
-        </tr>
+        <tr><th>ID</th><th>Description</th><th>Status</th><th>Validation</th></tr>
       </thead>
       <tbody>
         <tr>
@@ -612,7 +438,7 @@
           <td class="req-id">SRS-03</td>
           <td>IoT dashboard updates with &lt;3 s latency</td>
           <td><span class="badge badge-green">Achieved</span></td>
-          <td>Dashboard polls <code style="font-family:var(--mono)">/data</code> at 1 Hz; measured end-to-end lag well under 3 s</td>
+          <td>Dashboard polls <code>/data</code> at 1 Hz; measured end-to-end lag well under 3 s</td>
         </tr>
         <tr>
           <td class="req-id">SRS-04</td>
@@ -629,15 +455,10 @@
       </tbody>
     </table>
 
-    <h3 style="font-size:18px;font-weight:400;margin:32px 0 12px;color:var(--muted2);">Hardware Requirements (HRS)</h3>
-    <table class="req-table">
+    <h3>Hardware Requirements (HRS)</h3>
+    <table>
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Description</th>
-          <th>Status</th>
-          <th>Validation</th>
-        </tr>
+        <tr><th>ID</th><th>Description</th><th>Status</th><th>Validation</th></tr>
       </thead>
       <tbody>
         <tr>
@@ -667,24 +488,19 @@
       </tbody>
     </table>
   </section>
-</div>
 
-<!-- FIRMWARE -->
-<div class="container">
   <section id="firmware">
-    <div class="section-label">04 — Software</div>
-    <div class="section-title"><b>Firmware</b> Architecture</div>
+    <h2>Firmware Architecture</h2>
 
     <p>
       The ATmega328PB is the main MCU. It runs the tracking loop, reads the four LDRs through
       its ADC, drives both servos with hardware-timer PWM, and talks to the INA219 over I2C. It
       then ships the full telemetry packet (voltage, current, power, pan, tilt) to the ESP32
       Feather over UART. The Feather acts as a serial-to-Wi-Fi bridge — parsing UART frames and
-      hosting a local HTTP server on <code style="font-family:var(--mono);font-size:13px;color:var(--amber);">/data</code>
-      that serves the latest readings as JSON.
+      hosting a local HTTP server on <code>/data</code> that serves the latest readings as JSON.
     </p>
 
-    <div class="arch-callout">
+    <div class="callout">
       <strong>Main loop (ATmega):</strong> ADC → 4× LDR → compute horizontal &amp; vertical error
       → deadband filter → nudge pan/tilt servo targets → update Timer1 compare registers
       (50 Hz PWM, non-blocking) → INA219 via I2C → UART telemetry frame at 9600 baud.
@@ -726,24 +542,18 @@
       </div>
     </div>
 
-    <!-- Dashboard screenshot: ~2:1, dark bg — show full-width, contain -->
-    <div class="fig fig-dark" style="margin-top:28px;">
+    <div class="fig">
       <img src="images/server.png" alt="Live ESP32 web dashboard" />
       <div class="fig-caption">Fig 5 — Live ESP32 web dashboard (voltage, current, power, pan, tilt)</div>
     </div>
   </section>
-</div>
 
-<!-- PROGRESS -->
-<div class="container">
   <section id="progress">
-    <div class="section-label">05 — Build Log</div>
-    <div class="section-title"><b>Sprint</b> Progress</div>
+    <h2>Sprint Progress</h2>
 
-    <!-- Sprint 1 -->
     <div class="sprint-card">
       <div class="sprint-title">Sprint #1</div>
-      <h3>Single-Axis Validation & Servo Control</h3>
+      <h3>Single-Axis Validation &amp; Servo Control</h3>
       <p>
         Built a simplified single-axis solar tracker demo to validate the core tracking algorithm.
         Two LDRs connected to PC0 and PC1 sense light direction. Timer1 generates 50 Hz PWM on PB1
@@ -761,24 +571,21 @@
       </div>
     </div>
 
-    <!-- Sprint 2 -->
     <div class="sprint-card">
       <div class="sprint-title">Sprint #2</div>
-      <h3>INA219 Sensing, ESP32 Dashboard & Mechanical Assembly</h3>
+      <h3>INA219 Sensing, ESP32 Dashboard &amp; Mechanical Assembly</h3>
       <p>
         Abhay completed the INA219 current/voltage sensing setup — the sensor communicates over I2C
         and provides accurate power readings from the solar panel. Ashwin got the ESP32 Feather
         working with a local web server pulling all sensor data for the live dashboard. Arnuv printed
         the mechanical parts for the gimbal and assembled the full pan-tilt mechanism with servos mounted.
       </p>
-      <!-- INA219 breadboard photo: 4:3, full-width hero -->
       <div class="fig fig-photo-hero">
         <img src="images/ina.jpeg" alt="INA219 current/voltage sensor wired up" />
         <div class="fig-caption">Fig 7 — INA219 power monitor wired to the ATmega over I2C</div>
       </div>
     </div>
 
-    <!-- MVP -->
     <div class="sprint-card">
       <div class="sprint-title">MVP Demo</div>
       <h3>Full Integration — Tracking + Sensing + Dashboard</h3>
@@ -793,13 +600,12 @@
         dashboard updates → home button pressed → both servos return to center.
       </p>
 
-      <!-- Full integrated assembly: 4:3 hero photo -->
       <div class="fig fig-photo-hero">
         <img src="images/tilt_pan.jpeg" alt="Full MVP assembly: breadboard, ATmega, and 3D-printed gimbal" />
         <div class="fig-caption">Fig 8 — MVP assembly: ATmega + INA219 breadboard with 3D-printed pan-tilt gimbal</div>
       </div>
 
-      <div class="btn-row" style="margin-top:20px;">
+      <div class="btn-row">
         <a href="https://drive.google.com/file/d/1Zr529B0K1XDM-7jDKDU-3Q6FYsO6Z7r6/view?usp=sharing"
            class="btn btn-primary" target="_blank" rel="noopener">
           ▶ Watch MVP Demo
@@ -807,126 +613,74 @@
       </div>
     </div>
   </section>
-</div>
 
-<!-- FINAL REPORT -->
-<div class="container">
   <section id="report">
-    <div class="section-label">06 — Final Report</div>
-    <div class="section-title"><b>Final</b> Report</div>
+    <h2>Final Report</h2>
 
-    <h3 style="font-size:18px;font-weight:400;margin-bottom:16px;color:var(--muted2);">Demo Video</h3>
+    <h3>Demo Video</h3>
     <div class="placeholder-box">
       [ Final demo video link — add here before submission ]
     </div>
 
-    <h3 style="font-size:18px;font-weight:400;margin:28px 0 16px;color:var(--muted2);">Final Images</h3>
+    <h3>Final Images</h3>
     <div class="placeholder-box">
       [ Final build photos — add here before submission ]
     </div>
 
-    <h3 style="font-size:18px;font-weight:400;margin:28px 0 12px;color:var(--muted2);">SRS Results</h3>
-    <table class="req-table">
+    <h3>SRS Results</h3>
+    <table>
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Description</th>
-          <th>Validation Outcome</th>
-        </tr>
+        <tr><th>ID</th><th>Description</th><th>Validation Outcome</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td class="req-id">SRS-01</td>
-          <td>Sample 4 LDRs via ADC at ≥10 Hz</td>
-          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
-        </tr>
-        <tr>
-          <td class="req-id">SRS-02</td>
-          <td>Deadband filter prevents servo jitter</td>
-          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
-        </tr>
-        <tr>
-          <td class="req-id">SRS-03</td>
-          <td>Dashboard latency &lt;3 s</td>
-          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
-        </tr>
-        <tr>
-          <td class="req-id">SRS-04</td>
-          <td>Hardware-timer 50 Hz PWM, non-blocking</td>
-          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
-        </tr>
-        <tr>
-          <td class="req-id">SRS-05</td>
-          <td>Button resets servos to home within 2 s</td>
-          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
-        </tr>
+        <tr><td class="req-id">SRS-01</td><td>Sample 4 LDRs via ADC at ≥10 Hz</td><td>[ To be filled in for final submission ]</td></tr>
+        <tr><td class="req-id">SRS-02</td><td>Deadband filter prevents servo jitter</td><td>[ To be filled in for final submission ]</td></tr>
+        <tr><td class="req-id">SRS-03</td><td>Dashboard latency &lt;3 s</td><td>[ To be filled in for final submission ]</td></tr>
+        <tr><td class="req-id">SRS-04</td><td>Hardware-timer 50 Hz PWM, non-blocking</td><td>[ To be filled in for final submission ]</td></tr>
+        <tr><td class="req-id">SRS-05</td><td>Button resets servos to home within 2 s</td><td>[ To be filled in for final submission ]</td></tr>
       </tbody>
     </table>
 
-    <h3 style="font-size:18px;font-weight:400;margin:28px 0 12px;color:var(--muted2);">HRS Results</h3>
-    <table class="req-table">
+    <h3>HRS Results</h3>
+    <table>
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Description</th>
-          <th>Validation Outcome</th>
-        </tr>
+        <tr><th>ID</th><th>Description</th><th>Validation Outcome</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td class="req-id">HRS-01</td>
-          <td>Physical rotation ≥45° pan and ≥45° tilt</td>
-          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
-        </tr>
-        <tr>
-          <td class="req-id">HRS-02</td>
-          <td>LDRs capture directional light differences</td>
-          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
-        </tr>
-        <tr>
-          <td class="req-id">HRS-03</td>
-          <td>MPPT / buck-boost regulates charging</td>
-          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
-        </tr>
-        <tr>
-          <td class="req-id">HRS-04</td>
-          <td>USB-C battery charging with LED indicator</td>
-          <td style="color:var(--muted);">[ To be filled in for final submission ]</td>
-        </tr>
+        <tr><td class="req-id">HRS-01</td><td>Physical rotation ≥45° pan and ≥45° tilt</td><td>[ To be filled in for final submission ]</td></tr>
+        <tr><td class="req-id">HRS-02</td><td>LDRs capture directional light differences</td><td>[ To be filled in for final submission ]</td></tr>
+        <tr><td class="req-id">HRS-03</td><td>MPPT / buck-boost regulates charging</td><td>[ To be filled in for final submission ]</td></tr>
+        <tr><td class="req-id">HRS-04</td><td>USB-C battery charging with LED indicator</td><td>[ To be filled in for final submission ]</td></tr>
       </tbody>
     </table>
 
-    <h3 style="font-size:18px;font-weight:400;margin:28px 0 12px;color:var(--muted2);">Conclusion</h3>
+    <h3>Conclusion</h3>
     <div class="placeholder-box">
       [ Conclusion — add here before final submission ]
     </div>
   </section>
-</div>
 
-<!-- LINKS -->
-<div class="container">
-  <section id="links" style="border-bottom:none;padding-bottom:32px;">
-    <div class="section-label">Resources</div>
-    <div class="section-title"><b>Links</b> & References</div>
+  <section id="links">
+    <h2>Links &amp; References</h2>
     <div class="btn-row">
       <a href="https://github.com/upenn-embedded/final-project-s26-t26"
-         class="btn btn-outline" target="_blank" rel="noopener">
+         class="btn" target="_blank" rel="noopener">
         GitHub Repository ↗
       </a>
       <a href="https://docs.google.com/spreadsheets/d/1A1eUAg9dwYdbk0ykns5I-RBsm5lOC9emmNqb9aPvp44/edit?usp=sharing"
-         class="btn btn-outline" target="_blank" rel="noopener">
+         class="btn" target="_blank" rel="noopener">
         Bill of Materials ↗
       </a>
       <a href="https://drive.google.com/file/d/1Zr529B0K1XDM-7jDKDU-3Q6FYsO6Z7r6/view?usp=sharing"
-         class="btn btn-outline" target="_blank" rel="noopener">
+         class="btn" target="_blank" rel="noopener">
         MVP Demo Video ↗
       </a>
     </div>
   </section>
-</div>
 
-<!-- FOOTER -->
-<footer>
+</main>
+
+<footer class="site-footer">
   <span>AAA Battery · Team 12 · ESE 3500 Spring 2026 · University of Pennsylvania</span>
   <a href="https://github.com/upenn-embedded/final-project-s26-t26" target="_blank" rel="noopener">
     upenn-embedded/final-project-s26-t26
