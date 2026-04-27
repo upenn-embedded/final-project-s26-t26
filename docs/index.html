@@ -575,7 +575,7 @@
       Building this turned out to be a much broader integration exercise
       than any of us expected when we proposed it. We were combining analog sensing, real-time
       servo control, I2C, IoT, mechanical design, and power electronics, and getting all of those subsystems to coexist on one MCU was the most valuable
-      lesson of the semester — not any one technology in isolation.
+      lesson of the semester.
     </p>
 
     <p>
@@ -583,10 +583,7 @@
       by demo day. The Timer1-driven 50 Hz PWM stayed clean across the full duty-cycle range
       (Fig 7 &amp; 8); the deadband filter killed jitter without killing responsiveness; the
       home-button interrupt reset the servos well under our 2 s budget; and the live dashboard
-      pulled JSON over Wi-Fi and rendered with sub-second latency. The architectural decision to
-      use the ESP32 Feather as a serial-to-Wi-Fi bridge — rather than try to do networking on the
-      AVR itself — paid off: it kept the main loop tight and let us iterate on the dashboard
-      independently of the firmware.
+      pulled JSON over Wi-Fi and rendered with sub-second latency. 
     </p>
 
     <p>
