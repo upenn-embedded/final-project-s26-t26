@@ -24,3 +24,6 @@
 #pdf
 *.pdf
 *.txt
+
+# Claude Code worktrees (must not be committed as gitlinks)
+.claude/worktrees/
