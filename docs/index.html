@@ -340,7 +340,7 @@
         </div>
       </div>
       <div class="team-card">
-        <img class="team-photo" src="images/arnuv.jpeg" alt="Arnuv Batra" style="object-position: center 80%;" />
+        <img class="team-photo" src="images/arnuv.jpeg" alt="Arnuv Batra" />
         <div class="team-info">
           <div class="team-name">Arnuv Batra</div>
           <div class="team-email">avbatra@seas.upenn.edu</div>
@@ -421,49 +421,14 @@
       Home-position ISR runs on external interrupt pin.
     </div>
 
-    <div class="file-list">
-      <div class="file-chip">
-        <div class="file-chip-name">Code/main.c</div>
-        <div class="file-chip-desc">Main tracking loop: ADC sampling, deadband filter, servo PWM, UART telemetry</div>
-      </div>
-      <div class="file-chip">
-        <div class="file-chip-name">Code/i2c.c / .h</div>
-        <div class="file-chip-desc">Bare-metal TWI master driver (no Arduino Wire dependency)</div>
-      </div>
-      <div class="file-chip">
-        <div class="file-chip-name">Code/ina219.c / .h</div>
-        <div class="file-chip-desc">INA219 power monitor driver: calibration register, voltage &amp; current readout</div>
-      </div>
-      <div class="file-chip">
-        <div class="file-chip-name">Code/uart.c / .h</div>
-        <div class="file-chip-desc">UART TX/RX for debug prints and ESP32 bridge frames</div>
-      </div>
-      <div class="file-chip">
-        <div class="file-chip-name">Code/ese3500_uart.ino</div>
-        <div class="file-chip-desc">ESP32: parses UART CSV, serves GET /data as JSON, hosts static dashboard</div>
-      </div>
-      <div class="file-chip">
-        <div class="file-chip-name">Code/demo.c</div>
-        <div class="file-chip-desc">Sprint 1 single-axis validation demo (generalized into main.c)</div>
-      </div>
-      <div class="file-chip">
-        <div class="file-chip-name">include/config.h</div>
-        <div class="file-chip-desc">Build-time constants: deadband, PWM limits, UART baud rate</div>
-      </div>
-      <div class="file-chip">
-        <div class="file-chip-name">include/types.h</div>
-        <div class="file-chip-desc">Shared type definitions across drivers</div>
-      </div>
-    </div>
-
     <div class="fig">
-      <img src="images/server.png" alt="Live ESP32 web dashboard" />
-      <div class="fig-caption">Fig 5 — Live ESP32 web dashboard (voltage, current, power, pan, tilt)</div>
+      <img src="images/server.png" alt="ESP32 web dashboard with simulated data" />
+      <div class="fig-caption">Fig 5 — ESP32 web dashboard rendering simulated voltage, current, power, pan, and tilt values for layout testing</div>
     </div>
   </section>
 
   <section id="progress">
-    <h2>Sprint Progress</h2>
+    <h2>MVP Progress</h2>
 
     <div class="sprint-card">
       <div class="sprint-title">MVP Demo</div>
