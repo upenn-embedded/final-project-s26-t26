@@ -339,7 +339,7 @@
         </div>
       </div>
       <div class="team-card">
-        <img class="team-photo" src="images/arnuv.jpeg" alt="Arnuv Batra" />
+        <img class="team-photo" src="images/arnuv.jpeg" alt="Arnuv Batra" style="object-position: center bottom;" />
         <div class="team-info">
           <div class="team-name">Arnuv Batra</div>
           <div class="team-email">avbatra@seas.upenn.edu</div>
@@ -619,8 +619,14 @@
     <h2>Final Report</h2>
 
     <h3>Demo Video</h3>
-    <div class="placeholder-box">
-      [ Final demo video link — add here before submission ]
+    <div class="fig">
+      <video controls preload="metadata" style="width:100%;display:block;background:#000;" playsinline>
+        <source src="images/demo.mov" type="video/quicktime" />
+        <source src="images/demo.mov" type="video/mp4" />
+        Your browser doesn't support inline video playback.
+        <a href="images/demo.mov">Download the demo video</a> instead.
+      </video>
+      <div class="fig-caption">Final demo — dual-axis tracking, INA219 telemetry, and live ESP32 dashboard</div>
     </div>
 
     <h3>Servo PWM Validation</h3>
