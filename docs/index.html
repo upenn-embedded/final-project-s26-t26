@@ -365,11 +365,7 @@
       sun. Adding MPPT further increases efficiency by ensuring the panel operates at optimal
       voltage regardless of changing light and temperature conditions.
     </p>
-    <p>
-      This project combines analog sensing, real-time control, power electronics, and IoT on a
-      single ATmega328PB — the result is a fully functional miniature solar energy system optimized
-      to maximize power output.
-    </p>
+    
 
     <div class="fig">
       <img src="images/AAA Proposal Block Diagram.jpg" alt="System Block Diagram" />
@@ -377,7 +373,7 @@
     </div>
 
     <div class="callout">
-      <strong>Architecture in one sentence:</strong> Four LDRs feed the ATmega ADC → tracking
+      <strong>Architecture:</strong> Four LDRs feed the ATmega ADC → tracking
       algorithm drives two servo PWMs → INA219 over I2C reports panel power → UART frame ships
       telemetry to ESP32 → ESP32 hosts a live JSON endpoint and web dashboard over Wi-Fi.
     </div>
@@ -385,14 +381,6 @@
 
   <section id="design">
     <h2>Design &amp; Mechanical</h2>
-
-    <p>
-      The LDR quadrant divider is the most critical design feature — a small cross-shaped wall
-      between the four LDRs that creates shadow differences when the panel is off-angle, enabling
-      the tracking algorithm to determine direction. The pan-tilt bracket and base enclosure are
-      both 3D-printed, allowing the mount to fit our specific solar panel and servo arrangement.
-    </p>
-
     <div class="fig">
       <img src="images/sketch.jpg" alt="Design Sketch" />
       <div class="fig-caption">Fig 2 — Early design sketch: pan-tilt gimbal, LDR baffle, electronics enclosure</div>
@@ -411,84 +399,8 @@
 
     <p>
       The CAD files for the solar mounting plate (SolidWorks + STL) are in the repository under
-      <code>CAD/</code>. All mechanical parts were 3D printed in-lab.
+      <code>CAD/</code>
     </p>
-  </section>
-
-  <section id="requirements">
-    <h2>Requirements &amp; Validation</h2>
-
-    <h3>Software Requirements (SRS)</h3>
-    <table>
-      <thead>
-        <tr><th>ID</th><th>Description</th><th>Status</th><th>Validation</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="req-id">SRS-01</td>
-          <td>Sample 4 LDRs via ADC at ≥10 Hz</td>
-          <td><span class="badge badge-green">Achieved</span></td>
-          <td>GPIO-toggle + oscilloscope measured period confirms ≥10 Hz sampling rate</td>
-        </tr>
-        <tr>
-          <td class="req-id">SRS-02</td>
-          <td>Deadband filter to prevent servo jitter when error is below threshold</td>
-          <td><span class="badge badge-green">Achieved</span></td>
-          <td>With panel centered, servos hold still; UART error values stay inside deadband</td>
-        </tr>
-        <tr>
-          <td class="req-id">SRS-03</td>
-          <td>IoT dashboard updates with &lt;3 s latency</td>
-          <td><span class="badge badge-green">Achieved</span></td>
-          <td>Dashboard polls <code>/data</code> at 1 Hz; measured end-to-end lag well under 3 s</td>
-        </tr>
-        <tr>
-          <td class="req-id">SRS-04</td>
-          <td>Hardware-timer 50 Hz PWM for servo actuation, non-blocking</td>
-          <td><span class="badge badge-green">Achieved</span></td>
-          <td>Scoped PB1/PB2 PWM outputs — stable 20 ms period, main loop continues during PWM</td>
-        </tr>
-        <tr>
-          <td class="req-id">SRS-05</td>
-          <td>Button interrupt resets servos to home position within 2 s</td>
-          <td><span class="badge badge-green">Achieved</span></td>
-          <td>External-interrupt ISR sets flag; servos return to center on press, well under 2 s</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>Hardware Requirements (HRS)</h3>
-    <table>
-      <thead>
-        <tr><th>ID</th><th>Description</th><th>Status</th><th>Validation</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="req-id">HRS-01</td>
-          <td>Physical rotation ≥45° pan and ≥45° tilt</td>
-          <td><span class="badge badge-green">Achieved</span></td>
-          <td>Measured end-stop angles with a protractor on the assembled gimbal — both axes exceed 45°</td>
-        </tr>
-        <tr>
-          <td class="req-id">HRS-02</td>
-          <td>LDRs accurately capture directional light differences for tracking</td>
-          <td><span class="badge badge-green">Achieved</span></td>
-          <td>Moved a lamp across the array; raw ADC values logged over UART show opposing pairs diverge cleanly</td>
-        </tr>
-        <tr>
-          <td class="req-id">HRS-03</td>
-          <td>MPPT / buck-boost safely regulating charging from the solar panel</td>
-          <td><span class="badge badge-amber">Partial</span></td>
-          <td>Module wired on bench; MPPT tuning against the real panel ongoing — perturb-and-observe in progress</td>
-        </tr>
-        <tr>
-          <td class="req-id">HRS-04</td>
-          <td>USB-C battery bank charging with LED power indicator</td>
-          <td><span class="badge badge-amber">Partial</span></td>
-          <td>LED mounted; remaining work is routing solar-panel rail through to USB-C output</td>
-        </tr>
-      </tbody>
-    </table>
   </section>
 
   <section id="firmware">
@@ -554,41 +466,6 @@
     <h2>Sprint Progress</h2>
 
     <div class="sprint-card">
-      <div class="sprint-title">Sprint #1</div>
-      <h3>Single-Axis Validation &amp; Servo Control</h3>
-      <p>
-        Built a simplified single-axis solar tracker demo to validate the core tracking algorithm.
-        Two LDRs connected to PC0 and PC1 sense light direction. Timer1 generates 50 Hz PWM on PB1
-        for servo control. The tracking algorithm compares LDR readings and moves the servo toward
-        the brighter side, with a deadband filter to prevent jitter when light levels are nearly equal.
-      </p>
-      <p>
-        Key issues resolved: (1) board resets caused by servo inrush current — fixed with a separate
-        regulated servo supply rail; (2) servo drift from mismatched LDR response curves — added UART
-        ADC logging to diagnose and apply a calibration offset.
-      </p>
-      <div class="fig fig-photo-hero">
-        <img src="images/A1597461-95D0-42B8-BAEC-2AC0EF84B3DA.jpeg" alt="Sprint 1 - single axis demo" />
-        <div class="fig-caption">Fig 6 — Sprint 1: ATmega328PB + LDRs + servo on breadboard, single-axis tracking demo</div>
-      </div>
-    </div>
-
-    <div class="sprint-card">
-      <div class="sprint-title">Sprint #2</div>
-      <h3>INA219 Sensing, ESP32 Dashboard &amp; Mechanical Assembly</h3>
-      <p>
-        Abhay completed the INA219 current/voltage sensing setup — the sensor communicates over I2C
-        and provides accurate power readings from the solar panel. Ashwin got the ESP32 Feather
-        working with a local web server pulling all sensor data for the live dashboard. Arnuv printed
-        the mechanical parts for the gimbal and assembled the full pan-tilt mechanism with servos mounted.
-      </p>
-      <div class="fig fig-photo-hero">
-        <img src="images/ina.jpeg" alt="INA219 current/voltage sensor wired up" />
-        <div class="fig-caption">Fig 7 — INA219 power monitor wired to the ATmega over I2C</div>
-      </div>
-    </div>
-
-    <div class="sprint-card">
       <div class="sprint-title">MVP Demo</div>
       <h3>Full Integration — Tracking + Sensing + Dashboard</h3>
       <p>
@@ -604,7 +481,7 @@
 
       <div class="fig fig-photo-hero">
         <img src="images/tilt_pan.jpeg" alt="Full MVP assembly: breadboard, ATmega, and 3D-printed gimbal" />
-        <div class="fig-caption">Fig 8 — MVP assembly: ATmega + INA219 breadboard with 3D-printed pan-tilt gimbal</div>
+        <div class="fig-caption">Fig 6 — MVP assembly: ATmega + INA219 breadboard with 3D-printed pan-tilt gimbal</div>
       </div>
 
       <div class="btn-row">
@@ -638,11 +515,11 @@
     <div class="img-grid-2">
       <div class="fig fig-photo">
         <img src="images/min_duty_cycle.jpg" alt="Oscilloscope capture: minimum servo duty cycle" />
-        <div class="fig-caption">Fig 9 — Minimum duty cycle (servo at one end-stop)</div>
+        <div class="fig-caption">Fig 7 — Minimum duty cycle (servo at one end-stop)</div>
       </div>
       <div class="fig fig-photo">
         <img src="images/max_duty_cycle.jpg" alt="Oscilloscope capture: maximum servo duty cycle" />
-        <div class="fig-caption">Fig 10 — Maximum duty cycle (servo at the other end-stop)</div>
+        <div class="fig-caption">Fig 8 — Maximum duty cycle (servo at the other end-stop)</div>
       </div>
     </div>
 
@@ -674,7 +551,7 @@
           <td class="req-id">SRS-04</td>
           <td>Hardware-timer 50 Hz PWM, non-blocking</td>
           <td><span class="badge badge-green">Achieved</span></td>
-          <td>Scoped PB1/PB2 outputs show a stable 20 ms period at both min and max duty (Fig 9 &amp; 10); main loop continues during PWM generation.</td>
+          <td>Scoped PB1/PB2 outputs show a stable 20 ms period at both min and max duty (Fig 7 &amp; 8); main loop continues during PWM generation.</td>
         </tr>
         <tr>
           <td class="req-id">SRS-05</td>
@@ -695,7 +572,7 @@
           <td class="req-id">HRS-01</td>
           <td>Physical rotation ≥45° pan and ≥45° tilt</td>
           <td><span class="badge badge-green">Achieved</span></td>
-          <td>End-stop angles measured with a protractor on the assembled gimbal — both axes exceed 45°.</td>
+          <td>Both axes very obviously visually exceed 45° - 90° for tilt servo and 180° for pan servo. </td>
         </tr>
         <tr>
           <td class="req-id">HRS-02</td>
