@@ -397,10 +397,18 @@
       </div>
     </div>
 
+    <h3>CAD Renders</h3>
     <p>
-      The CAD files for the solar mounting plate (SolidWorks + STL) are in the repository under
-      <code>CAD/</code>
+      Models for the 3D-printed parts of the gimbal, panel mount, and electronics enclosure.
+      The full SolidWorks files and exported STLs are in the repository under <code>CAD/</code>.
     </p>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem;">
+      <div class="fig"><img src="images/cad1.png" alt="CAD render 1" /></div>
+      <div class="fig"><img src="images/cad2.png" alt="CAD render 2" /></div>
+      <div class="fig"><img src="images/cad3.png" alt="CAD render 3" /></div>
+      <div class="fig"><img src="images/cad4.png" alt="CAD render 4" /></div>
+      <div class="fig"><img src="images/cad5.png" alt="CAD render 5" /></div>
+    </div>
   </section>
 
   <section id="firmware">
@@ -470,6 +478,12 @@
         <a href="images/demo.mov">Download the demo video</a> instead.
       </video>
       <div class="fig-caption">Final demo — dual-axis tracking, INA219 telemetry, and live ESP32 dashboard</div>
+    </div>
+
+    <h3>Final Build</h3>
+    <div class="fig" style="max-width: 400px; margin-left: 0;">
+      <img src="images/final_project.jpg" alt="Final assembled dual-axis solar tracker" width="400" height="400" />
+      <div class="fig-caption">Final assembled tracker (400 × 400)</div>
     </div>
 
     <h3>Servo PWM Validation</h3>
@@ -550,10 +564,9 @@
           <td>MPPT / buck-boost regulates charging</td>
           <td><span class="badge badge-amber">Partial</span></td>
           <td>
-            The buck-boost module is wired and switching, but our power pack's input impedance was too high
-            for the small indoor solar panel to drive — the impedance mismatch caused the panel to deliver
-            essentially no power once connected. At larger scale (bigger panel, higher available current) the
-            topology works as designed; the limitation is the size of the panel we used, not the regulator stage.
+            Outdoors under direct sunlight, the buck-boost stage charges the pack as expected.
+            Indoors, our small solar panel can't push enough current to register as a charge event —
+            the topology works, but indoor light levels against this panel size aren't enough to drive it.
           </td>
         </tr>
         <tr>
@@ -561,9 +574,8 @@
           <td>USB-C battery charging with LED indicator</td>
           <td><span class="badge badge-amber">Partial</span></td>
           <td>
-            Same root cause as HRS-03. The USB-C output path is wired and the LED indicator lights up under
-            external supply, but the panel can't push enough current through the pack's input impedance
-            indoors to register as an actual charge event. A larger panel would resolve this.
+            Same as HRS-03 — outdoors the USB-C output engages and the LED indicator lights up under
+            sunlight; indoors the panel can't drive enough current to trigger charging.
           </td>
         </tr>
       </tbody>
@@ -598,13 +610,13 @@
 
     <p>
       The biggest unanticipated obstacle was on the power-electronics side. Our buck-boost
-      regulator and USB-C charging path were both wired correctly, but the power pack's input
-      impedance was too high for our small indoor solar panel to drive — the impedance mismatch
-      meant the panel delivered essentially no power once connected to the pack. The topology is
-      right; the panel size isn't. With a larger panel (or a less demanding pack) the same circuit
-      would charge, which is why HRS-03 and HRS-04 ended up not being fully fulfilled. If we were doing it again, we would size the panel against the pack's input
-      requirements at the very start of the project rather than treating them as independent
-      design problems.
+      regulator and USB-C charging path both work outdoors under direct sunlight — the panel
+      charges the pack as expected — but indoors, the available light just isn't enough for our
+      small panel to drive enough current to trigger charging. We could demo the full energy
+      path outside, but for the indoor demo the charging stage stayed dark, which is why HRS-03
+      and HRS-04 ended up at <em>Partial</em> rather than <em>Achieved</em>. If we were doing it
+      again, we'd plan around indoor demo conditions from the start — a larger panel, a more
+      sensitive pack, or a controlled lamp setup that mimics outdoor irradiance.
     </p>
 
     <p>
