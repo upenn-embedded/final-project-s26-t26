@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AAA Battery — Dual-Axis Solar Tracker | ESE 3500</title>
+  <title>AAA Battery: Dual-Axis Solar Tracker | ESE 3500</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -304,21 +304,14 @@
 <body>
 
 <header class="page-header">
-  <p class="eyebrow">ESE 3500 · Spring 2026 · Final Project · Team 12 — AAA Battery</p>
+  <p class="eyebrow">ESE 3500 · Spring 2026 · Final Project · Team 12 · AAA Battery</p>
   <h1><b>Dual-Axis</b> Solar Tracker</h1>
   <p class="tagline">
     An embedded system that autonomously orients a solar panel toward the brightest
-    light source — combining analog sensing, real-time servo control, power electronics,
+    light source, combining analog sensing, real-time servo control, power electronics,
     and a live IoT dashboard on a bare-metal ATmega328PB.
   </p>
-  <div class="chips">
-    <span class="chip">Team: <b>AAA Battery</b></span>
-    <span class="chip">MCU: <b>ATmega328PB</b></span>
-    <span class="chip">IoT: <b>ESP32 Feather</b></span>
-    <span class="chip">Sensing: <b>4× LDR + INA219</b></span>
-    <span class="chip">Actuation: <b>2× Micro Servo</b></span>
-  </div>
-</header>
+  </header>
 
 <main class="main-content">
 
@@ -361,7 +354,7 @@
     </p>
     <p>
       Fixed solar panels lose significant energy throughout the day as the sun moves across the
-      sky — often capturing only 60–70% of available energy compared to a panel that tracks the
+      sky, often capturing only 60–70% of available energy compared to a panel that tracks the
       sun. Adding MPPT further increases efficiency by ensuring the panel operates at optimal
       voltage regardless of changing light and temperature conditions.
     </p>
@@ -369,7 +362,7 @@
 
     <div class="fig">
       <img src="images/AAA Proposal Block Diagram.jpg" alt="System Block Diagram" />
-      <div class="fig-caption">Fig 1 — System Block Diagram</div>
+      <div class="fig-caption">Fig 1. System Block Diagram</div>
     </div>
 
     <div class="callout">
@@ -383,17 +376,17 @@
     <h2>Design &amp; Mechanical</h2>
     <div class="fig">
       <img src="images/sketch.jpg" alt="Design Sketch" />
-      <div class="fig-caption">Fig 2 — Early design sketch: pan-tilt gimbal, LDR baffle, electronics enclosure</div>
+      <div class="fig-caption">Fig 2. Early design sketch: pan-tilt gimbal, LDR baffle, electronics enclosure</div>
     </div>
 
     <div class="img-grid-2">
       <div class="fig fig-photo">
         <img src="images/servo.jpeg" alt="Servo mounted in 3D-printed bracket" />
-        <div class="fig-caption">Fig 3 — Servo in 3D-printed pan-tilt bracket</div>
+        <div class="fig-caption">Fig 3. Servo in 3D-printed pan-tilt bracket</div>
       </div>
       <div class="fig fig-photo">
         <img src="images/solar_panel.jpeg" alt="Small solar panel with leads" />
-        <div class="fig-caption">Fig 4 — Solar panel with output leads</div>
+        <div class="fig-caption">Fig 4. Solar panel with output leads</div>
       </div>
     </div>
 
@@ -408,6 +401,7 @@
       <div class="fig"><img src="images/cad3.png" alt="CAD render 3" /></div>
       <div class="fig"><img src="images/cad4.png" alt="CAD render 4" /></div>
       <div class="fig"><img src="images/cad5.png" alt="CAD render 5" /></div>
+      <div class="fig"><img src="images/cad6.png" alt="CAD render of the electronics enclosure" /></div>
     </div>
   </section>
 
@@ -418,7 +412,7 @@
       The ATmega328PB is the main MCU. It runs the tracking loop, reads the four LDRs through
       its ADC, drives both servos with hardware-timer PWM, and talks to the INA219 over I2C. It
       then ships the full telemetry packet (voltage, current, power, pan, tilt) to the ESP32
-      Feather over UART. The Feather acts as a serial-to-Wi-Fi bridge — parsing UART frames and
+      Feather over UART. The Feather acts as a serial-to-Wi-Fi bridge, parsing UART frames and
       hosting a local HTTP server on <code>/data</code> that serves the latest readings as JSON.
     </p>
 
@@ -431,7 +425,7 @@
 
     <div class="fig">
       <img src="images/server.png" alt="ESP32 web dashboard with simulated data" />
-      <div class="fig-caption">Fig 5 — ESP32 web dashboard rendering simulated voltage, current, power, pan, and tilt values for layout testing</div>
+      <div class="fig-caption">Fig 5. ESP32 web dashboard rendering simulated voltage, current, power, pan, and tilt values for layout testing</div>
     </div>
   </section>
 
@@ -440,7 +434,7 @@
 
     <div class="sprint-card">
       <div class="sprint-title">MVP Demo</div>
-      <h3>Full Integration — Tracking + Sensing + Dashboard</h3>
+      <h3>Full Integration: Tracking + Sensing + Dashboard</h3>
       <p>
         The ATmega tracks light on both axes, INA219 reports real-time power, UART ships telemetry
         to the ESP32, and the web dashboard charts voltage, current, power, pan, and tilt live.
@@ -454,7 +448,7 @@
 
       <div class="fig fig-photo-hero">
         <img src="images/tilt_pan.jpeg" alt="Full MVP assembly: breadboard, ATmega, and 3D-printed gimbal" />
-        <div class="fig-caption">Fig 6 — MVP assembly: ATmega + INA219 breadboard with 3D-printed pan-tilt gimbal</div>
+        <div class="fig-caption">Fig 6. MVP assembly: ATmega + INA219 breadboard with 3D-printed pan-tilt gimbal</div>
       </div>
 
       <div class="btn-row">
@@ -477,7 +471,7 @@
         Your browser doesn't support inline video playback.
         <a href="images/demo.mov">Download the demo video</a> instead.
       </video>
-      <div class="fig-caption">Final demo — dual-axis tracking, INA219 telemetry, and live ESP32 dashboard</div>
+      <div class="fig-caption">Final demo: dual-axis tracking, INA219 telemetry, and live ESP32 dashboard</div>
     </div>
 
     <h3>Final Build</h3>
@@ -489,16 +483,16 @@
     <h3>Servo PWM Validation</h3>
     <p>
       Oscilloscope captures of the Timer1 PWM output at the two extremes of the
-      servo range — confirming the 50 Hz frame period and clean duty-cycle modulation.
+      servo range, confirming the 50 Hz frame period and clean duty-cycle modulation.
     </p>
     <div class="img-grid-2">
       <div class="fig fig-photo">
         <img src="images/min_duty_cycle.jpg" alt="Oscilloscope capture: minimum servo duty cycle" />
-        <div class="fig-caption">Fig 7 — Minimum duty cycle (servo at one end-stop)</div>
+        <div class="fig-caption">Fig 7. Minimum duty cycle (servo at one end-stop)</div>
       </div>
       <div class="fig fig-photo">
         <img src="images/max_duty_cycle.jpg" alt="Oscilloscope capture: maximum servo duty cycle" />
-        <div class="fig-caption">Fig 8 — Maximum duty cycle (servo at the other end-stop)</div>
+        <div class="fig-caption">Fig 8. Maximum duty cycle (servo at the other end-stop)</div>
       </div>
     </div>
 
@@ -565,8 +559,8 @@
           <td><span class="badge badge-amber">Partial</span></td>
           <td>
             Outdoors under direct sunlight, the buck-boost stage charges the pack as expected.
-            Indoors, our small solar panel can't push enough current to register as a charge event —
-            the topology works, but indoor light levels against this panel size aren't enough to drive it.
+            Indoors, our small solar panel can't push enough current to register as a charge event.
+            The topology works, but indoor light levels against this panel size aren't enough to drive it.
           </td>
         </tr>
         <tr>
@@ -574,7 +568,7 @@
           <td>USB-C battery charging with LED indicator</td>
           <td><span class="badge badge-amber">Partial</span></td>
           <td>
-            Same as HRS-03 — outdoors the USB-C output engages and the LED indicator lights up under
+            Same as HRS-03: outdoors the USB-C output engages and the LED indicator lights up under
             sunlight; indoors the panel can't drive enough current to trigger charging.
           </td>
         </tr>
@@ -603,19 +597,19 @@
       mysterious board resets that turned out to be servo inrush current dragging the regulator
       down; switching to a dedicated servo supply rail fixed it instantly, but we burned a couple
       of hours assuming it was a code bug first. The LDR pairs also didn't match each other as
-      well as we had assumed — instead of trying to find "matched" sensors, we accepted the
+      well as we had assumed. Instead of trying to find "matched" sensors, we accepted the
       variance and added per-channel calibration offsets, diagnosed by streaming raw ADC values
       over UART. 
     </p>
 
     <p>
       The biggest unanticipated obstacle was on the power-electronics side. Our buck-boost
-      regulator and USB-C charging path both work outdoors under direct sunlight — the panel
-      charges the pack as expected — but indoors, the available light just isn't enough for our
+      regulator and USB-C charging path both work outdoors under direct sunlight (the panel
+      charges the pack as expected), but indoors, the available light just isn't enough for our
       small panel to drive enough current to trigger charging. We could demo the full energy
       path outside, but for the indoor demo the charging stage stayed dark, which is why HRS-03
       and HRS-04 ended up at <em>Partial</em> rather than <em>Achieved</em>. If we were doing it
-      again, we'd plan around indoor demo conditions from the start — a larger panel, a more
+      again, we'd plan around indoor demo conditions from the start: a larger panel, a more
       sensitive pack, or a controlled lamp setup that mimics outdoor irradiance.
     </p>
 
